@@ -1,0 +1,12 @@
+{
+  "RECORDS": [
+    {
+      "Tid": "20001",
+      "Tname": "teacher1",
+      "Tnickname": "王老师",
+      "Tpassword": "123456",
+      "Tphone": "15800000000",
+      "Ticon": ""
+    }
+  ]
+}

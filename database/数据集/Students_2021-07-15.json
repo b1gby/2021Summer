@@ -1,0 +1,14 @@
+{
+  "RECORDS": [
+    {
+      "Sid": "10001",
+      "Sname": "student1",
+      "Snickname": "张三",
+      "Spassword": "123456",
+      "Sphone": "13800000000",
+      "Sicon": "",
+      "Sgrade": "七年级",
+      "Cid": "30001"
+    }
+  ]
+}

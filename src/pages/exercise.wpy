@@ -1,0 +1,146 @@
+<!-- exercise.wpy -->
+
+<style lang="less">
+    .titlePassBtn{
+        margin-top:20rpx;
+    }
+
+    .input {
+        width: 70%;
+    }
+
+    .submitBtn{
+        width: 150rpx;
+    }
+
+</style>
+
+<template>
+    <button class="weui-btn submitBtn" size="mini" type="primary" @tap="clickSubmit()">提交</button>
+        
+    <panel>
+        
+        <view class="title" slot="title">题目</view>
+        <view>{{list[index].EnameTxt}}</view>
+
+    </panel>
+
+    <panel>
+        
+        <view class="title" slot="title">作答</view>
+        <input class="input" @input="inputChange" value="{{ answer[index] }}" disabled="{{inputDisabled}}" type="text" placeholder="请填空上述诗句" />
+    </panel>
+
+    <view style="display: flex;flex-direction: row;">
+        <button class="titlePassBtn" type="primary" @tap="clickLast()">上一题</button>
+        <button class="titlePassBtn" type="primary" @tap="clickNext()">下一题</button>
+    </view>
+
+    <mp-dialog title="成绩" show="{{showOneButtonDialog}}" bindbuttontap="tapDialogButton" buttons="{{oneButton}}">
+        <view>{{exercise[index].Egrade}}{{exercise[index].Esubject}}共计{{list.length}}道，答对{{rightNum}}道，答错{{list.length-rightNum}}道。</view>
+    </mp-dialog>
+</template>
+    
+<script>
+import wepy from 'wepy'
+import Panel from '@/components/panel' // alias example
+
+export default class Exercise extends wepy.page{
+    config = {
+        usingComponents: {
+            "mp-dialog": "/miniprogram_npm/weui-miniprogram/dialog/dialog"
+        }
+        
+    }
+    
+    components = {
+      panel: Panel
+    }
+
+    data={
+        list: [],
+        index: 0,
+        answer: [],
+        showOneButtonDialog: false,
+        oneButton: [{text: '确定'}],
+        rightNum:0,
+        inputDisabled:false,
+    }
+
+    methods = {
+        clickLast(){
+            let self = this
+            if(self.index!=0){
+                self.index--;
+            }
+        },
+
+        clickNext(){
+            let self = this
+            if(self.index!=self.list.length-1){
+                self.index++;
+            }
+        },
+
+        clickSubmit() {
+            let self = this;
+            let newData ={
+                answer:JSON.stringify(self.answer)
+            }
+
+            //清空答对题数目
+            self.rightNum = 0
+            //无法继续答题
+            self.inputDisabled = true
+
+            wepy.request({
+                url:'http://1.116.126.208:8080/submit/today_problems',
+                method: 'GET',
+                data:{
+                    answer:self.answer
+                },
+                success:function(res) {
+                    // console.log("success",res.data)
+                    self.showOneButtonDialog = true
+                    for(var i=0;i<res.data.length;i++) {
+                        if (res.data[i] == true){
+                            self.rightNum++
+                        }
+                    }
+                    self.$apply()
+                },
+            })
+        },
+
+        tapDialogButton(e) {
+            let self = this;
+            self.showOneButtonDialog = false
+        },
+
+        inputChange(e) {
+            let self = this
+            self.answer[self.index] = e.detail.value.trim()   
+        }
+    }
+    
+    onLoad() {
+        let self = this;
+
+        //初始化answer数组
+        for(var i=0;i<10;i++){
+            self.answer[i] = ""
+        }
+
+        wepy.request({
+            url:'http://1.116.126.208:8080/ping',
+            method: 'GET',
+            success:function(res) {
+                console.log("success",res.data)
+                self.list = res.data
+
+                self.$apply()
+            },
+        })
+    } 
+}
+</script>

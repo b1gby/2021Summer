@@ -1,0 +1,26 @@
+<!-- today_grade.wpy -->
+
+<style lang="less">
+</style>
+
+<template>
+</template>
+
+<script>
+import wepy from 'wepy'
+
+export default class Index extends wepy.page {
+    config = {
+      usingComponents:{
+        
+      }
+    }
+
+    data={
+    }
+
+    onLoad() {
+      console.log("123")
+    }
+}
+</script>

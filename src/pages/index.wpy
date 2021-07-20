@@ -1,0 +1,88 @@
+<!-- index.wpy -->
+
+
+<style lang="less">
+  .tab-bar{
+    position:fixed;
+    bottom:0;
+    width:100%;
+  }
+
+  .header{
+    height:30vh;
+    position: relative;
+  }
+
+  .userinfo {
+    display: flex;
+    flex-direction: row;
+    position:absolute;
+    top:30%;
+    transform: translateY(-50%);
+    margin:50rpx;
+    // align-items: center;
+  }
+
+  .userinfo-avatar {
+    width: 120rpx;
+    height: 120rpx;
+    border-radius: 50%;
+    margin:20rpx;
+  }
+
+  .userinfo-nickname {
+    color: #aaa;
+    margin:20rpx;
+    line-height: 120rpx;
+  }
+
+</style>
+
+<template>
+  <view class="header">
+    <view class="userinfo" @tap="handleViewTap">
+      <image class="userinfo-avatar" src="{{ userInfo.avatarUrl }}" background-size="cover"/>
+      <view class="userinfo-nickname">{{ userInfo.nickName }}</view>
+    </view>
+  </view>
+
+  <button @tap="onClickExercise()" class='weui-btn' type="primary"> 每日习题 </button>
+  <button class='weui-btn' type="primary"> 我的错题 </button>
+
+</template>
+
+<script>
+  import wepy from 'wepy'
+
+  export default class Index extends wepy.page {
+    config = {
+      usingComponents:{
+        
+      }
+    }
+
+    data={
+      userInfo: {
+        nickName: '加载中...'
+      },
+    }
+
+    onClickExercise() {
+      console.log("111")
+      this.$navigate({url:"exercise"})
+    }
+
+
+    onLoad() {
+      let self = this
+      this.$parent.getUserInfo(function (userInfo) {
+        if (userInfo) {
+          self.userInfo = userInfo
+        }
+        
+        self.$apply()
+      })
+    }
+  }
+
+</script>
