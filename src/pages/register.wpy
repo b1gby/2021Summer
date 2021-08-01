@@ -1,0 +1,159 @@
+<!-- register.wpy -->
+
+<style>
+
+</style>
+
+<template>
+    <view>
+        <view>用户名</view>
+        <input class="input" data-name="username" @input="inputChange" value="{{ username }}" type="text" placeholder="请输入您的账号" />
+        <view>密码</view>
+        <input class="input" data-name="password" @input="inputChange" value="{{password}}" password = "true" type="safe-passward" placeholder="请输入您的密码" />
+        <view>再次密码</view>
+        <input class="input" data-name="passwordAgain" @input="inputChange" value="{{passwordAgain}}" password = "true" type="safe-passward" placeholder="请再次输入您的密码" />
+        <view>手机</view>
+        <input class="input" data-name="phone" @input="inputChange" value="{{phone}}" type="number" placeholder="请输入您的手机号码" />
+        <view>年级</view>
+        <picker bindchange="bindPickerChangeGrade" value="{{gradeIndex}}" range="{{grades}}">
+            <view class="picker">
+            当前选择：{{grades[gradeIndex]}}
+            </view>
+        </picker>
+        <view>校区</view>
+        <picker bindchange="bindPickerChangeCampus" value="{{campusIndex}}" range="{{campus}}">
+            <view class="picker">
+            当前选择：{{campus[campusIndex]}}
+            </view>
+        </picker>
+    </view>
+    
+    <button type="primary" @tap="clickSubmit()">注册</button>
+
+    <mp-dialog title="{{dialogTitle}}" show="{{dialogShowOneButton}}" bindbuttontap="tapDialogOneButton" buttons="{{oneButton}}">
+      <view>{{dialogMsg}}</view>
+    </mp-dialog>
+</template>
+
+<script>
+import wepy from 'wepy'
+export default class Register extends wepy.page{
+    config = {
+        usingComponents: {
+            "mp-dialog": "/miniprogram_npm/weui-miniprogram/dialog/dialog"
+        }
+    }
+
+    data={
+        userinfo:{
+            username: "",
+            password: "",
+            passwordAgain: "",
+            phone: "",
+        },
+        
+        grades: ["七年级","八年级","九年级"],
+        gradeIndex: 0,
+        campusData: [],
+        campus: [],
+        campusIndex: 0,
+        dialogShowOneButton: false,
+        oneButton: [{text: '确定'}],
+        dialogTitle:"",
+        dialogMsg: "",
+    }
+
+    methods = {
+        tapDialogOneButton(e) {
+            let self = this
+            self.dialogShowOneButton = false
+            if (self.dialogTitle == "注册成功") {
+                wepy.navigateBack({url:"login"})
+            }
+        },
+
+        bindPickerChangeCampus: function(e) {
+            console.log('picker发送选择改变，携带值为', e.detail.value)
+            this.campusIndex = e.detail.value
+        },
+
+        bindPickerChangeGrade: function(e) {
+            console.log('picker发送选择改变，携带值为', e.detail.value)
+            this.gradeIndex = e.detail.value
+        },
+
+        inputChange(e) {
+            let self = this
+            console.log(self)
+            
+            this.userinfo[e.currentTarget.dataset.name] = e.detail.value.trim()
+            this.$apply()
+        },
+
+        getCampusData(self) {
+           
+            wepy.request({
+                url:'http://159.138.3.194:8080/app/campus/get_all_campus',
+                method:'GET',
+                success: function(res) {
+                    console.log(res)
+                    if(res.data.Code == 1) {
+                        console.log("get campus success")
+                        self.campusData = res.data.Data
+                        self.campus = self.campusData.map(function(item) {
+                            return item.Cname
+                        })
+                        self.$apply()
+                    }
+                }
+            })
+        },
+        
+        clickSubmit(){
+            let self = this;
+            
+            wepy.request({
+                url:'http://159.138.3.194:8080/app/student/register',
+                method:'POST',
+                data:{
+                    Sname:self.userinfo.username,
+                    Spassword:self.userinfo.password,
+                    SpasswordAgain:self.userinfo.passwordAgain,
+                    Sphone: self.userinfo.phone,
+                    Sgrade: self.grades[self.gradeIndex],
+                    Cid: self.campusData[self.campusIndex].Cid
+                },
+                success: function(res) {
+                    console.log(res)
+                    if(res.data.Code == 1) {
+                        console.log("register success")
+                        self.dialogTitle = "注册成功"
+                        self.dialogMsg = "注册成功"
+                        self.dialogShowOneButton = true
+                        self.$apply()
+                    } else if(res.data.Code == 2){
+                        if(res.data.Msg=="Password not consistent!"){
+                            self.dialogTitle = "密码不一致"
+                            self.dialogMsg = "两次输入的密码不一致，请重新输入"
+                            self.dialogShowOneButton = true
+                            self.$apply()
+                        }else if(res.data.Msg=="Username existed!"){
+                            self.dialogTitle = "用户名已存在"
+                            self.dialogMsg = "您注册的用户名已存在，请重新输入"
+                            self.dialogShowOneButton = true
+                            self.$apply()
+                        }
+                    }
+                }
+            })
+            
+        }
+    }
+
+    onLoad() {
+        let self = this
+        this.methods.getCampusData(self)
+    }
+
+}
+</script>

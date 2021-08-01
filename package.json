@@ -17,6 +17,7 @@
   "author": "王 博 <316828036@qq.com>",
   "license": "MIT",
   "dependencies": {
+    "@miniprogram-component-plus/tabs": "^1.0.0",
     "@wepy/core": "^2.1.0",
     "wepy": "^1.6.0",
     "wepy-async-function": "^1.4.4",

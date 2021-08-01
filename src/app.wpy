@@ -1,5 +1,7 @@
 <style lang="less">
 @import './style/weui.less';
+@import "colorui/main.wxss";
+@import "colorui/icon.wxss";
 
 .container {
   height: 100%;
@@ -16,12 +18,15 @@ import wepy from 'wepy'
 import 'wepy-async-function'
 
 export default class extends wepy.app {
+
   config = {
     pages: [
       'pages/index',
+      'pages/login',
       'pages/example',
       'pages/exercise',
-      'pages/today_grade'
+      'pages/today_grade',
+      'pages/register',
     ],
     window: {
       backgroundTextStyle: 'light',
@@ -49,20 +54,20 @@ export default class extends wepy.app {
     useExtendedLib: {
       weui: true
     },
+    usingComponents:{
+      "cu-custom": "/colorui/components/cu-custom",
+    },
   }
 
   globalData = {
-    userInfo: null
+    userInfo: null,
+    session: {
+      sessionKey: "LoginSessionKey",
+      sessionDate: "sessionDate",
+      sessionUserInfo: "sessionUserInfo",
+    },
   }
-
-  constructor () {
-    super()
-    this.use('requestfix')
-  }
-
-  onLaunch() {
-    this.testAsync()
-  }
+  
 
   sleep (s) {
     return new Promise((resolve, reject) => {
@@ -72,22 +77,19 @@ export default class extends wepy.app {
     })
   }
 
-  async testAsync () {
-    const data = await this.sleep(3)
-    console.log(data)
+
+  // 设置带有cookie的request header，每次request都带这个header
+  setHeader() {
+    let self = this
+    let header = {
+      'Content-type': 'application/json; charset=utf-8',
+      'Cookie': self.sessionkey + "=" + wepy.getStorageSync("LoginSessionKey") //读取本地保存好的上一次cookie
+    };
+    return header
   }
 
-  getUserInfo(cb) {
-    const that = this
-    if (this.globalData.userInfo) {
-      return this.globalData.userInfo
-    }
-    wepy.getUserInfo({
-      success (res) {
-        that.globalData.userInfo = res.userInfo
-        cb && cb(res.userInfo)
-      }
-    })
+  onLaunch() {
+    
   }
 }
 </script>
