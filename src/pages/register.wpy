@@ -93,7 +93,7 @@ export default class Register extends wepy.page{
         getCampusData(self) {
            
             wepy.request({
-                url:'http://159.138.3.194:8080/app/campus/get_all_campus',
+                url:wepy.$instance.globalData.serverUrl + '/app/campus/get_all_campus',
                 method:'GET',
                 success: function(res) {
                     console.log(res)
@@ -113,7 +113,7 @@ export default class Register extends wepy.page{
             let self = this;
             
             wepy.request({
-                url:'http://159.138.3.194:8080/app/student/register',
+                url:wepy.$instance.globalData.serverUrl + '/app/student/register',
                 method:'POST',
                 data:{
                     Sname:self.userinfo.username,

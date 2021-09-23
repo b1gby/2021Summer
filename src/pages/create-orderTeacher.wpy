@@ -1,0 +1,298 @@
+
+<style>
+
+</style>
+
+<template>
+<view class="flex bg-white align-center">
+    <view class="padding flex-sub text-left" @tap="onClickEditTeacher">
+    </view>
+    <view class="padding flex-sub text-center text-black text-lg text-bold">
+        预约家教
+    </view>
+    <view class="padding flex flex-sub justify-end">
+        <button class="cu-btn bg-green shadow" wx:if="{{isClickEdit}}" @tap="onClickSubmit" form-type="submit">提交</button>
+    </view>
+</view>
+
+<form @submit="formSubmit">
+	<view class="cu-form-group">
+		<view class="title">联系人</view>
+		<input name="OTcontactName"></input>
+        <radio-group class="flex padding" bindchange="sexRadioChange" > 
+            <view class="flex-sub flex align-center" wx:for="{{sexList}}" wx:key="{{item.value}}">
+                <view class="margin-xs">
+                    <radio value="{{item.value}}" checked="{{item.checked}}" />
+                </view>
+                <view class="">{{item.name}}</view>
+            </view>
+        </radio-group>
+	</view>
+
+    <view class="cu-form-group">
+		<view class="title">手机号码</view>
+		<input name="OTcontactPhone" type="number"></input>
+	</view>
+
+    <view class="cu-form-group">
+		<view class="title">地址</view>
+        <picker bindchange="pickerAddressChange" name="OTAddress" value="{{AddressNameList[AddressIndex]}}" range="{{AddressNameList}}">
+			<view class="picker">
+				<text class="text-lg">{{AddressIndex?AddressNameList[AddressIndex]:AddressNameList[0]}}</text>
+			</view>
+		</picker>
+	</view>
+
+    <view class="cu-bar bg-white margin-top">
+        <view class="action">
+			预约科目
+		</view>
+    </view>
+
+    <view class="cu-form-group">
+        <checkbox-group class="flex padding" bindchange="checkboxChange" data-type="subject"> 
+            <view class="flex-sub flex align-center" wx:for="{{checkboxList['subject']}}" wx:key="{{item.value}}">
+                <view class="margin-xs">
+                    <checkbox value="{{item.value}}" checked="{{item.checked}}" />
+                </view>
+                <view class="">{{item.name}}</view>
+            </view>
+        </checkbox-group>
+    </view>
+
+    <view class="cu-bar bg-white margin-top">
+        <view class="action">
+			预约时间
+		</view>
+    </view>
+
+    <view class="cu-bar bg-white flex">
+        <view class="padding-left basis-sm">
+            星期
+        </view>
+        
+        <checkbox-group class="padding" bindchange="checkboxChange" data-type="week"> 
+            <view class="grid col-3 grid-squre">
+                <view class="flex align-center" wx:for="{{checkboxList['week']}}" wx:key="{{item.value}}">
+                    <view class="margin-xs">
+                        <checkbox value="{{item.value}}" checked="{{item.checked}}" />
+                    </view>
+                    <view class="">{{item.name}}</view>
+                </view>
+            </view>
+        </checkbox-group>
+    </view>
+
+
+    <view class="cu-form-group">
+        时间段
+        <checkbox-group class="flex padding" bindchange="checkboxChange" data-type="timeSlot"> 
+            <view class="flex-sub flex align-center" wx:for="{{checkboxList['timeSlot']}}" wx:key="{{item.value}}">
+                <view class="margin-xs">
+                    <checkbox value="{{item.value}}" checked="{{item.checked}}" />
+                </view>
+                <view class="">{{item.name}}</view>
+            </view>
+        </checkbox-group>
+    </view>
+
+    <view class="padding flex justify-center bg-white">
+        <button class="cu-btn bg-green shadow lg" form-type="submit">提交</button>
+    </view>
+</form>
+</template>
+
+<script>
+import wepy from 'wepy'
+export default class Teacher extends wepy.page{
+    data={
+        Sid: null,
+        teacher: {},
+        imgList: [],
+        AddressIndex:0,
+        AddressNameList: [
+            '思明','湖里','集美','海沧','翔安','同安','其他'
+        ],
+
+        sexList:[{
+            value: "0",
+            name: "先生",
+            checked: false,
+        },{
+            value: "1",
+            name: "女士",
+            checked: false,
+        }],
+
+        checkboxList: {
+            'subject':[{
+                value: "0",
+                name: "语文",
+                checked: false,
+            },{
+                value: "1",
+                name: "数学",
+                checked: false,
+            },{
+                value: "2",
+                name: "英语",
+                checked: false,
+            },{
+                value: "3",
+                name: "物理",
+                checked: false,
+            },{
+                value: "4",
+                name: "化学",
+                checked: false,
+            }],
+
+            'week':[{
+                value: "0",
+                name: "星期一",
+                checked: false,
+            },{
+                value: "1",
+                name: "星期二",
+                checked: false,
+            },{
+                value: "2",
+                name: "星期三",
+                checked: false,
+            },{
+                value: "3",
+                name: "星期四",
+                checked: false,
+            },{
+                value: "4",
+                name: "星期五",
+                checked: false,
+            },{
+                value: "5",
+                name: "星期六",
+                checked: false,
+            },{
+                value: "6",
+                name: "星期日",
+                checked: false,
+            }],
+
+            'timeSlot':[{
+                value: "0",
+                name: "上午",
+                checked: false,
+            },{
+                value: "1",
+                name: "下午",
+                checked: false,
+            },{
+                value: "2",
+                name: "晚上",
+                checked: false,
+            }],
+
+        },
+        
+
+
+        isClickEdit: false,
+        imgUrl:wepy.$instance.globalData.serverUrl + '/app/file/get_image?name=',
+    }
+
+    methods= {
+        pickerAddressChange(e){
+            let self = this
+            self.AddressIndex = e.detail.value
+        },
+
+        sexRadioChange(e) {
+            let self = this
+            console.log('radio发生change事件，携带value值为：', e.detail.value)
+
+            for (let i = 0, len = self.sexList.length; i < len; ++i) {
+                self.sexList[i].checked = self.sexList[i].value === e.detail.value
+            }
+
+        },
+
+        checkboxChange(e) {
+            let self = this
+            console.log('checkbox发生change事件，携带value值为：', e.detail.value)
+
+            const values = e.detail.value
+            const type = e.currentTarget.dataset.type
+            for (let i = 0, lenI = self.checkboxList[type].length; i < lenI; ++i) {
+                self.checkboxList[type][i].checked = false
+
+                for (let j = 0, lenJ = values.length; j < lenJ; ++j) {
+                    if (self.checkboxList[type][i].value === values[j]) {
+                        self.checkboxList[type][i].checked = true
+                        break
+                    }
+                }
+            }
+        },
+    
+        formSubmit(e) {
+            let self = this
+
+            let sendFormData = e.detail.value // form 表单数据
+            let sex = ""
+            if(self.sexList[0].checked){
+                sex = "先生"
+            }else if(self.sexList[1].checked){
+                sex = "女士"
+            }
+            sendFormData['OTcontactName'] = sendFormData['OTcontactName'] + sex
+            sendFormData['Sid'] = Number(self.Sid)
+            sendFormData['OTsubject'] = self.getCheckedList("subject")
+            sendFormData['OTweek'] = self.getCheckedList("week")
+            sendFormData['OTtimeSlot'] = self.getCheckedList("timeSlot")
+
+            
+            console.log(sendFormData)
+            wepy.request({
+                url:wepy.$instance.globalData.serverUrl + '/app/student/insert_order_teacher',
+                method:'POST',
+                data: sendFormData,
+                header: wepy.$instance.setHeader(),
+                success: function(res) {
+                    console.log(res)
+                    if (res.data.Code == 1){
+                        wx.showToast({
+                              title: '修改成功，请重新登录', //提示的内容,
+                              icon: 'success', //图标,
+                              mask: true, //显示透明蒙层，防止触摸穿透,
+                              success: res => {}
+                            });
+
+                        self.$apply()
+                    } 
+                }
+            })
+            
+        },
+    }
+
+    getCheckedList(type) {
+        let self = this
+
+        let res = ""
+        for(let i=0;i<self.checkboxList[type].length;i++){
+            if(self.checkboxList[type][i].checked == true){
+                res += self.checkboxList[type][i].name + ";"
+            }
+        }
+        res = res.slice(0,-1)
+        return res
+    }
+
+    onLoad(options) {
+        let self = this
+
+        self.Sid = options.sid
+
+    }
+
+}
+</script>

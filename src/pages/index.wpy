@@ -42,18 +42,19 @@
   
   <view class="header">
     <view class="userinfo" @tap="onClickLogin()">
-      <image class="userinfo-avatar" src="{{ userInfo.Sicon }}" background-size="cover"/>
+      <image class="userinfo-avatar" src="{{ userInfo==null?noUserIcon:imgUrl + userInfo.Sicon }}" background-size="cover"/>
       <view class="userinfo-other">
-        <view >姓名：{{ userInfo.Snickname }}</view>
-        <view >年级：{{ userInfo.Sgrade }}</view>
-        <view >校区：{{ userInfo.Cname }}</view>
+        <view >姓名：{{ userInfo==null?'未登录':userInfo.Snickname }}</view>
+        <view >年级：{{ userInfo==null?'七年级':userInfo.Sgrade }}</view>
+        <view >校区：{{ userInfo==null?'思明':userInfo.Cname }}</view>
       </view>
     </view>
   </view>
 
-  <button @tap="onClickExercise()" class='weui-btn' type="primary"> 每日习题 </button>
-  <button class='weui-btn' type="primary"> 我的错题 </button>
+  <button @tap="onClickExercise" class='weui-btn' type="primary"> 每日习题 </button>
+  <button @tap="onClickWrongProblem" class='weui-btn' type="primary"> 我的错题 </button>
 
+  <button @tap="onClickOrderTeacher" class='weui-btn' type="primary">预约家教</button>
 
   <mp-dialog title="登录" show="{{dialogShow}}" bindbuttontap="tapDialogButton" buttons="{{buttons}}">
       <view>您还未登录，现在登录吗？</view>
@@ -75,12 +76,9 @@
     }
 
     data={
-      userInfo: {
-        Snickname: '未登录',
-        Sgrade: '七年级',
-        Sicon: 'http://159.138.3.194:8080/app/file/get_image?name=none_userinfo.png',
-        Cid: 0
-      },
+      userInfo: null,
+      noUserIcon : wepy.$instance.globalData.serverUrl + '/app/file/get_image?name=none_userinfo.png',
+      imgUrl:wepy.$instance.globalData.serverUrl + '/app/file/get_image?name=',
       dialogShow: false,
       dialogShowOneButton: false,
       buttons: [{text: '稍后登录'}, {text: '确定'}],
@@ -89,11 +87,22 @@
 
     methods= {
       onClickExercise() {
-        this.$navigate({url:"exercise"})
+        let self = this
+        this.$navigate({url:"exercise?sid="+self.userInfo.Sid})
       },
 
       onClickLogin() {
         this.$navigate({url:"login"})
+      },
+
+      onClickWrongProblem() {
+        let self = this
+        this.$navigate({url:"wrongproblem?sid="+self.userInfo.Sid})
+      },
+
+      onClickOrderTeacher() {
+        let self = this
+        this.$navigate({url:"create-orderTeacher?sid="+self.userInfo.Sid})
       },
 
 
@@ -111,62 +120,24 @@
         self.dialogShow = false
       },
 
-
-      //检查sessionid是否过期的方法
-      onCheckSessionTimeout(self) {
-        console.log("checking session")
-        const SESSION_TIMEOUT = 12 * 60 * 60 * 1000 //登陆状态有效时间为12小时
-        let sessionid = wepy.getStorageSync(wepy.$instance.globalData.session.sessionKey)
-        let sessionTime = wepy.getStorageSync(wepy.$instance.globalData.session.sessionDate)
-
-        if (sessionid == null || sessionid == undefined || sessionid == ""||sessionTime == null || sessionTime == undefined || sessionTime == "") {
-          console.log("session is empty")
-          return
-        }
-
-        let aftertimestamp = Date.parse(new Date())
-        console.log(aftertimestamp)
-        if (aftertimestamp - sessionTime >= SESSION_TIMEOUT) {
-          // 过期后清除session缓存
-          wepy.removeStorageSync(wepy.$instance.globalData.session.sessionKey)
-          wepy.removeStorageSync(wepy.$instance.globalData.session.sessionDate)
-          wepy.removeStorageSync(wepy.$instance.globalData.session.sessionUseriNFO)
-          console.log("remove session!")
-          self.userInfo = {
-              Snickname: '未登录',
-              Sgrade: '七年级',
-              Sicon: 'http://159.138.3.194:8080/app/file/get_image?name=none_userinfo.png',
-              Cid: 0
-            }
-          self.dialogShowOneButton = true
-          self.$apply()
-        }
-      },
-
     }
 
 
 
     onLoad() {
       let self = this
-
-      //检查sessionid是否过期
-      self.methods.onCheckSessionTimeout(self)
-
-      if(wepy.getStorageSync(wepy.$instance.globalData.session.sessionKey)) 
-        return
-      self.dialogShow = true
+      
     }
 
     onShow() {
       
       let self = this
-      wepy.$instance.globalData.userInfo = wepy.getStorageSync(wepy.$instance.globalData.session.sessionUserInfo)
-      
-      if(wepy.$instance.globalData.userInfo.type!=null) {
+      if(wepy.$instance.globalData.userInfo!=null){
         self.userInfo = wepy.$instance.globalData.userInfo
-      }   
-      
+      }
+      if(self.userInfo==null && !self.dialogShowOneButton){
+        self.dialogShow = true
+      }
     }
   }
 

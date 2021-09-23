@@ -1,0 +1,178 @@
+<style>
+    .DeleteButton{
+        color: red;
+    }
+    </style>
+    
+    <template>
+        <view class="flex bg-white align-center">
+            <view class="padding flex-sub text-left">
+                
+            </view>
+            <view class="padding flex-sub text-center text-black text-lg text-bold">
+                学情统计
+            </view>
+            <view class="padding flex flex-sub justify-end">
+                
+            </view>
+        </view>
+        
+        <scroll-view scroll-x class="bg-white nav text-center">
+            <view class="cu-item {{index==tabCur?'text-blue cur':''}}" wx:for="{{tabList}}" wx:key bindtap="tabSelectBar" data-id="{{index}}" wx:for-item="item">
+                {{item.name}}
+            </view>
+        </scroll-view>
+    
+        <view class="cu-card">
+            <view class="cu-item margin-top-xl margin-bottom-xl">
+                <view class="cu-list menu card-menuradius shadow">
+                    <view class="cu-item flex align-center" wx:if="{{tabCur==0}}">
+                        <view class="text-center flex-sub text-bold">考勤</view>
+                        <view class="text-center flex-sub text-bold">表现</view>
+                        <view class="text-center flex-sub text-bold">作业</view>
+                        <view class="text-center flex-twice text-bold">日期</view>
+                    </view>
+                    <view class="cu-item flex align-center" wx:else>
+                        <view class="text-center flex-twice text-bold">考试</view>
+                        <view class="text-center flex-sub text-bold">科目</view>
+                        <view class="text-center flex-sub text-bold">成绩</view>
+                        <view class="text-center flex-twice text-bold">日期</view>
+                    </view>
+    
+                    <view class="cu-item flex align-center" wx:if="{{tabCur==0}}" wx:for="{{learnSituationList['daily']}}" wx:key="index" wx:for-item="learnSituation">
+                        
+                        <view class="flex flex-sub">
+                            <view class="text-center flex-sub">
+                                {{learnSituation.LSattendence}}
+                            </view>
+                            <view class="text-center flex-sub">
+                                {{learnSituation.LSperform}}
+                            </view>
+                            <view class="text-center flex-sub">
+                                {{learnSituation.LShomework}}
+                            </view>
+                            <view class="text-center flex-twice">
+                                {{learnSituation.LSdate}}
+                            </view>
+                        </view>
+                    </view>
+    
+                    <view class="cu-item flex align-center" wx:if="{{tabCur==1}}" wx:for="{{learnSituationList['exam']}}" wx:key="index" wx:for-item="learnSituation" data-id="{{index}}">
+                        
+                        <view class="flex flex-sub">
+                            <view class="text-center flex-twice">
+                                {{learnSituation.LSexam}}
+                            </view>
+                            <view class="text-center flex-sub">
+                                {{learnSituation.LSsubject}}
+                            </view>
+                            <view class="text-center flex-sub">
+                                {{learnSituation.LSgrade}}
+                            </view>
+                            <view class="text-center flex-twice">
+                                {{learnSituation.LSdate}}
+                            </view>
+                        </view>
+                    </view>
+    
+    
+                </view>
+            </view>
+    
+            
+        </view>
+    </template>
+    
+    <script>
+    import wepy from 'wepy'
+    import moment from 'moment'; 
+    export default class Index extends wepy.page{
+        config = {
+            "usingComponents": {
+                
+            }
+        }
+    
+        data = {
+            Sid:null,
+            learnSituationList:{},
+            learnSituationId: -1,
+            isClickCreateLearnSituation: false,
+            isClickEditLearnSituation: false,
+            slideButtons: [{
+                    type: 'warn',
+                    text: '删除',
+                    extClass: 'DeleteButton',
+                }],
+            buttons: [{
+                    text: '取消',
+                },{
+                    text: '确定',
+                    extClass: 'DeleteButton',
+                }],
+            dialogShow: false,
+            deleteIndex:-1,
+            insertLearnSituationData:{'daily':['','',''],'exam':['','','']},
+            insertLSDate:{'daily':'','exam':''},
+            copyLearnSituationList:[],
+            tabCur: 0,
+            tabList: [{value:'daily',name:'平时'},{value:'exam',name:'考试'}],
+        }
+        
+        methods = {
+            
+            tabSelectBar(e) {
+                let self = this
+                self.tabCur = e.currentTarget.dataset.id
+            },
+    
+        }
+    
+        getLearnSituationData() {
+            let self = this
+            
+            wepy.request({
+                    url:wepy.$instance.globalData.serverUrl + '/app/student/get_learn_situation_list',
+                    method:'GET',
+                    header: wepy.$instance.setHeader(),
+                    data:{
+                        Sid:self.Sid,
+                    },
+                    success: function(res) {
+                        console.log(res)
+                        if (res.data.Code == 1){
+                            self.learnSituationList = res.data.Data
+                            
+                            for(let i = 0; i < self.learnSituationList['daily'].length; i++){
+                                self.learnSituationList['daily'][i].LSdate = self.learnSituationList['daily'][i].LSdate.substring(0, 10)
+                            }
+    
+                            for(let i = 0; i < self.learnSituationList['exam'].length; i++){
+                                self.learnSituationList['exam'][i].LSdate = self.learnSituationList['exam'][i].LSdate.substring(0, 10)
+                            }
+    
+                            self.copyLearnSituationList = JSON.parse(JSON.stringify(self.learnSituationList)) //深拷贝
+                            self.$apply()
+                        }
+                    }
+                })
+        }
+    
+        onLoad() {
+            let self = this
+    
+            self.Sid = wepy.$instance.globalData.userInfo.Sid
+        }
+    
+        onShow() {
+            let self = this
+            
+            self.getLearnSituationData()
+    
+            var date = new Date()
+            self.insertLSDate['daily'] =  moment().format('YYYY-MM-DD')
+            self.insertLSDate['exam'] =  moment().format('YYYY-MM-DD')
+        }
+    }
+    </script>
+    

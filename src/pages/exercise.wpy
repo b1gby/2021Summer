@@ -1,6 +1,10 @@
 <!-- exercise.wpy -->
 
 <style lang="less">
+    page{
+        background-color: white;
+    }
+
     .titlePassBtn{
         margin-top:20rpx;
     }
@@ -16,33 +20,92 @@
 </style>
 
 <template>
-    <button class="weui-btn submitBtn" size="mini" type="primary" @tap="clickSubmit()">提交</button>
-    <view>{{exerciseList[index].Esubject}}{{exerciseList[index].Egrade}}</view>
-    <view>{{exerciseList[index].Etype}}</view>
-    <panel style="padding-left:0rpx">
+    <view wx:if="{{exerciseList.length != 0}}">
         
-        <view class="title" slot="title">题目</view>
-            <block wx:if="{{exerciseList[index].EnamePath!=imageNullPath}}">
-                <image mode='widthFix' style= "width:90%" src ="{{exerciseList[index].EnamePath}}"></image>
-            </block>
-            <block wx:else>
-                <view>{{exerciseList[index].EnameTxt}}</view>
-            </block>
-    </panel>
+        <view class="solid-bottom padding">
+            <view class="text-black text-xl text-bold text-cut">
+                {{exerciseList[index]['Exercise'].Etitle}}
+            </view>
+            <view class="flex margin">
+                <view class="flex-start cu-tag radius bg-green text-lg light">
+                    {{exerciseList[index]['Exercise'].Egrade}}
+                </view>
+                <view class="flex-start cu-tag radius bg-brown text-lg light">
+                    {{exerciseList[index]['Exercise'].Esubject}}
+                </view>
+            </view>
+        </view>
+        <view class="padding solid-bottom">
+            <view class="text-xl text-black text-bold">
+                题目描述: {{exerciseList[index]['Exercise'].Edescription}}
+            </view>
 
-    <panel>
-        
-        <view class="title" slot="title">作答</view>
-        <input class="input" @input="inputChange" value="{{ answer[index] }}" disabled="{{inputDisabled}}" type="text" placeholder="请将答案填写在此处" />
-    </panel>
+            <view class="margin text-lg" wx:if="{{exerciseList[index]['Exercise'].EnameTxt!=''}}">
+                {{exerciseList[index]['Exercise'].EnameTxt}}
+            </view>
 
-    <view style="display: flex;flex-direction: row;">
-        <button class="titlePassBtn" type="primary" @tap="clickLast()">上一题</button>
-        <button class="titlePassBtn" type="primary" @tap="clickNext()">下一题</button>
+            <view class="margin" wx:if="{{exerciseList[index]['Exercise'].EnamePath!=''}}">
+                
+                <view wx:if="{{exerciseList[index]['Exercise'].Etype!='听写'}}" >
+                    <view wx:for="{{imageListOfName}}" wx:key="index" wx:for-item="imgOfName">
+                        <image src="{{imgOfName!=imageUrl?imgOfName:''}}" mode="widthFix" @tap="ViewImageOfName" data-url="{{imgOfName}}"></image>
+                    </view>
+                </view>
+
+                <audio src="{{exerciseList[index]['Exercise'].EnamePath?(audioUrl + exerciseList[index]['Exercise'].EnamePath):''}}" wx:else controls="true" name="" author=""></audio>
+
+            </view>
+            
+            
+        </view>
+
+        <view class="padding solid-bottom">
+            <view class="text-xl text-black text-bold">
+                作答
+            </view>
+
+            <input class="input text-lg margin" @input="inputChange" value="{{ exerciseList[index]['Answer']!=''?exerciseList[index]['Answer']:answer[index] }}" disabled="{{inputDisabled[index]}}" type="text" placeholder="请将答案填写在此处" />
+        </view>
+
+        <view class="padding solid-bottom" wx:if="{{exerciseList[index]['Answer']!=''}}">
+            <view class="text-xl text-black text-bold">
+                正确答案
+            </view>
+            <view class="margin text-lg">
+                {{exerciseList[index]['Exercise'].EanswerTxt}}
+            </view>
+            <view class="margin" wx:if="{{exerciseList[index]['Exercise'].EanswerPath!=''}}">
+                <view wx:for="{{imageListOfAnswer}}" wx:key="index" wx:for-item="imgOfAnswer">
+                    <image src="{{imgOfAnswer!=imageUrl?imgOfAnswer:''}}" mode="widthFix" @tap="ViewImageOfAnswer" data-url="{{imgOfAnswer}}"></image>
+                </view>
+            </view>
+
+            <view class="text-xl text-black text-bold">
+                系统判题
+            </view>
+            <view class="margin text-lg">
+                {{exerciseList[index]['Judge']}}
+            </view>
+        </view>
+
+        <view class="flex padding">
+            <button class="flex-sub margin cu-btn bg-green shadow-blur round" @tap="clickLast()">上一题</button>
+            <button class="flex-sub margin cu-btn bg-green shadow-blur round" @tap="clickSubmit()">提交</button>
+            <button class="flex-sub margin cu-btn bg-green shadow-blur round" @tap="clickNext()">下一题</button>
+        </view>
+        <view class="flex padding">
+            <view class="flex-sub margin"></view>
+            <button class="flex-twice margin cu-btn bg-pink shadow-blur round" @tap="clickAskQuestion()">提问老师</button>
+            <view class="flex-sub margin"></view>
+        </view>
     </view>
 
-    <mp-dialog title="成绩" show="{{showOneButtonDialog}}" bindbuttontap="tapDialogButton" buttons="{{oneButton}}">
-        <view>{{exercise[index].Egrade}}{{exercise[index].Esubject}}共计{{exerciseList.length}}道，答对{{rightNum}}道，答错{{exerciseList.length-rightNum}}道。</view>
+    <view wx:else>
+        <view class="flex justify-center">今日没有题目</view>
+    </view>
+
+    <mp-dialog title="作答" show="{{showOneButtonDialog}}" bindbuttontap="tapDialogButton" buttons="{{oneButton}}">
+        <view>今日题目已完成</view>
     </mp-dialog>
 </template>
     
@@ -53,7 +116,8 @@ import Panel from '@/components/panel' // alias example
 export default class Exercise extends wepy.page{
     config = {
         usingComponents: {
-            "mp-dialog": "/miniprogram_npm/weui-miniprogram/dialog/dialog"
+            "mp-dialog": "/miniprogram_npm/weui-miniprogram/dialog/dialog",
+            "mp-gallery": "weui-miniprogram/gallery/gallery",
         }
         
     }
@@ -63,17 +127,38 @@ export default class Exercise extends wepy.page{
     }
 
     data={
+        Sid: null,
         exerciseList: [],
         index: 0,
         answer: [],
         showOneButtonDialog: false,
         oneButton: [{text: '确定'}],
-        rightNum:0,
-        inputDisabled:false,
-        imageNullPath : "http://159.138.3.194:8080/app/file/download_file?name=null"
+        inputDisabled:null,
+        imageUrl:wepy.$instance.globalData.serverUrl + '/app/file/get_image?name=',
+        audioUrl:wepy.$instance.globalData.serverUrl + '/app/file/get_audio?name=',
+        imageListOfName: [],
+        imageListOfAnswer: [],
     }
 
     methods = {
+        ViewImageOfName(e) {
+            let self = this
+            console.log(self.imageUrl + e.currentTarget.dataset.url)
+            wx.previewImage({
+                urls: self.imageListOfName,
+                current: self.imageUrl + e.currentTarget.dataset.url
+            });
+        },
+
+        ViewImageOfAnswer(e) {
+            let self = this
+            console.log(self.imageUrl + e.currentTarget.dataset.url)
+            wx.previewImage({
+                urls: self.imageListOfAnswer,
+                current: self.imageUrl + e.currentTarget.dataset.url
+            });
+        },
+
         clickLast(){
             let self = this
             if(self.index!=0){
@@ -90,30 +175,61 @@ export default class Exercise extends wepy.page{
 
         clickSubmit() {
             let self = this;
+
+            // 检查题目是否全部完成
+            let allSubmit = true
+            for (let i=0;i<self.exerciseList.length;i++){
+                if(self.exerciseList[i]['Answer']==""){
+                    allSubmit = false
+                }
+            }
+
+            if(allSubmit){
+                self.showOneButtonDialog = true;
+                return
+            }
+
             let newData ={
                 answer:JSON.stringify(self.answer)
             }
 
             //清空答对题数目
             self.rightNum = 0
-            //无法继续答题
-            self.inputDisabled = true
 
+            let sendAnswer = {}
+            for(let i=0;i<self.exerciseList.length;i++){
+                sendAnswer[self.exerciseList[i]['Exercise'].Eid] = self.answer[i]
+            }
             wepy.request({
-                url:'http://159.138.3.194:8080/submit/today_problems',
+                url:wepy.$instance.globalData.serverUrl + '/app/today/judge_today_exercise',
                 method: 'GET',
                 data:{
-                    answer:self.answer
+                    "Sid": self.Sid,
+                    "SendAnswer":sendAnswer,
                 },
                 success:function(res) {
-                    // console.log("success",res.data)
-                    self.showOneButtonDialog = true
-                    for(var i=0;i<res.data.length;i++) {
-                        if (res.data[i] == true){
-                            self.rightNum++
-                        }
-                    }
-                    self.$apply()
+                    wx.showToast({
+                        title:"提交成功"
+                    })
+                    self.getTodayExercise()
+                },
+            })
+        },
+
+        clickAskQuestion(){
+            let self = this
+
+            wepy.request({
+                url:wepy.$instance.globalData.serverUrl + '/app/student/insert_ask_question',
+                method: 'POST',
+                data:{
+                    "Sid": Number(self.Sid),
+                    "Eid": Number(self.exerciseList[self.index]['Exercise'].Eid),
+                },
+                success:function(res) {
+                    wx.showToast({
+                        title:"提问成功"
+                    })
                 },
             })
         },
@@ -128,32 +244,53 @@ export default class Exercise extends wepy.page{
             self.answer[self.index] = e.detail.value.trim()   
         }
     }
-    
-    onLoad() {
-        let self = this;
 
-        //初始化answer数组
-        for(var i=0;i<10;i++){
-            self.answer[i] = ""
-        }
-
+    getTodayExercise(){
+        let self = this
         let today = new Date()
         wepy.request({
-            url:'http://159.138.3.194:8080/app/today/get_today_exercise',
+            url:wepy.$instance.globalData.serverUrl + '/app/today/get_today_exercise',
             data:{
-                Sid:wepy.$instance.globalData.userInfo.Sid,
+                Sid:self.Sid,
                 Date:today.toLocaleDateString()
             },
             method: 'GET',
+            header: wepy.$instance.setHeader(),
             success:function(res) {
-                console.log("success",res.data)
-                self.exerciseList = res.data.Data
-                for (let i=0;i<res.data.Data.length;i++){
-                    self.exerciseList[i].EnamePath = "http://159.138.3.194:8080/app/file/get_image?name=" + self.exerciseList[i].EnamePath
+                console.log(res)
+                if(res.data.Code != 2 && res.data.Msg != "No exercise!"){
+                    self.exerciseList = res.data.Data
+                    self.inputDisabled = new Array(self.exerciseList.length)
+
+                    for(let i=0;i<self.exerciseList.length;i++){
+                        if(self.exerciseList[i]['Exercise'].EnamePath!=""){
+                            let tmpList = self.exerciseList[i]['Exercise'].EnamePath.split(";")
+                            self.imageListOfName = tmpList.map(x => self.imageUrl + x)
+                        }
+                        if(self.exerciseList[i]['Exercise'].EanswerPath!=""){
+                            let tmpList = self.exerciseList[i]['Exercise'].EanswerPath.split(";")
+                            self.imageListOfAnswer = tmpList.map(x => self.imageUrl + x)
+                        }
+                        if(self.exerciseList[i]["Answer"] != ""){
+                            self.inputDisabled[i] = true
+                        } else{
+                            self.inputDisabled[i] = false
+                        }
+                    }
+                    self.$apply()
                 }
-                self.$apply()
+                
+                
             },
         })
+    }
+    
+    onLoad(options) {
+        let self = this;
+
+        self.Sid = options.sid
+        
+        self.getTodayExercise()
     } 
 }
 </script>

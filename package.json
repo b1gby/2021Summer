@@ -19,6 +19,7 @@
   "dependencies": {
     "@miniprogram-component-plus/tabs": "^1.0.0",
     "@wepy/core": "^2.1.0",
+    "moment": "^2.29.1",
     "wepy": "^1.6.0",
     "wepy-async-function": "^1.4.4",
     "wepy-com-toast": "^1.0.2",
