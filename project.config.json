@@ -1,7 +1,7 @@
 {
     "description": "A WePY project for student sorting out wrong questions",
     "setting": {
-        "urlCheck": false,
+        "urlCheck": true,
         "es6": false,
         "enhance": false,
         "postcss": false,
@@ -9,7 +9,7 @@
         "minified": false,
         "newFeature": false,
         "coverView": true,
-        "nodeModules": false,
+        "nodeModules": true,
         "autoAudits": false,
         "showShadowRootInWxmlPanel": true,
         "scopeDataCheck": false,
@@ -20,7 +20,7 @@
         "compileHotReLoad": false,
         "useMultiFrameRuntime": true,
         "useApiHook": true,
-        "useApiHostProcess": false,
+        "useApiHostProcess": true,
         "babelSetting": {
             "ignore": [],
             "disablePlugins": [],
@@ -35,7 +35,7 @@
         "showES6CompileOption": false
     },
     "compileType": "miniprogram",
-    "appid": "wx6cec14f0935251b7",
+    "appid": "wxde9f2b61ce101870",
     "projectname": "2021summer",
     "miniprogramRoot": "dist/",
     "condition": {}

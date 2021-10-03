@@ -1,60 +1,42 @@
 <!-- index.wpy -->
-
-
-<style lang="less">
-  .tab-bar{
-    position:fixed;
-    bottom:0;
-    width:100%;
-  }
-
-  .header{
-    height:30vh;
-    position: relative;
-  }
-
-  .userinfo {
-    display: flex;
-    flex-direction: row;
-    position:absolute;
-    top:30%;
-    transform: translateY(-50%);
-    margin:50rpx;
-    // align-items: center;
-  }
-
-  .userinfo-avatar {
-    width: 120rpx;
-    height: 120rpx;
-    border-radius: 50%;
-    margin:20rpx;
-  }
-
-  .userinfo-other {
-    color: #aaa;
-    margin:20rpx;
-    // line-height: 120rpx;
-  }
-
+<style>
 </style>
 
 <template>
   
-  <view class="header">
-    <view class="userinfo" @tap="onClickLogin()">
-      <image class="userinfo-avatar" src="{{ userInfo==null?noUserIcon:imgUrl + userInfo.Sicon }}" background-size="cover"/>
-      <view class="userinfo-other">
-        <view >姓名：{{ userInfo==null?'未登录':userInfo.Snickname }}</view>
-        <view >年级：{{ userInfo==null?'七年级':userInfo.Sgrade }}</view>
-        <view >校区：{{ userInfo==null?'思明':userInfo.Cname }}</view>
-      </view>
+  <view class="cu-card">
+    <view class="cu-item shadow radius" @tap="onClickLogin">
+        <view class="flex align-center">
+            <image style="width:80rpx;height:80rpx" class="margin margin-lr" src="{{userInfo==null?studentIconNoLogin:imgUrl + userInfo.Sicon}}" background-size="cover"/>
+            <view class="margin">
+                <view class="text-black text-xl text-bold">{{ userInfo==null?'学生未登录（点击登录）':userInfo.Snickname}}</view>
+            </view>   
+        </view>
+        <view class="flex align-center margin" wx:if="{{userInfo!=null}}">
+            <view class="flex-sub text-black text-lg">年级：{{userInfo.SgradeName }}</view>
+            <view class="flex-sub text-black text-lg">校区：{{userInfo.Cname }}</view>
+        </view>
     </view>
-  </view>
-
-  <button @tap="onClickExercise" class='weui-btn' type="primary"> 每日习题 </button>
-  <button @tap="onClickWrongProblem" class='weui-btn' type="primary"> 我的错题 </button>
-
-  <button @tap="onClickOrderTeacher" class='weui-btn' type="primary">预约家教</button>
+    <view wx:if="{{userInfo!=null}}" class="cu-item margin-top-xl margin-bottom-xl">
+        <view class="cu-list menu card-menuradius shadow">
+            <view class="cu-item arrow" data-url="exercise" @tap="onClick">
+                <view class="content">
+                    <view>每日习题</view>
+                </view>
+            </view>
+            <view class="cu-item arrow" data-url="wrongproblem" @tap="onClick">
+                <view class="content">
+                    <view>我的错题</view>
+                </view>
+            </view>
+            <!-- <view class="cu-item arrow" data-url="create-orderTeacher" @tap="onClick">
+                <view class="content">
+                    <view>预约家教</view>
+                </view>
+            </view> -->
+        </view>
+    </view>
+    </view>
 
   <mp-dialog title="登录" show="{{dialogShow}}" bindbuttontap="tapDialogButton" buttons="{{buttons}}">
       <view>您还未登录，现在登录吗？</view>
@@ -77,32 +59,25 @@
 
     data={
       userInfo: null,
-      noUserIcon : wepy.$instance.globalData.serverUrl + '/app/file/get_image?name=none_userinfo.png',
-      imgUrl:wepy.$instance.globalData.serverUrl + '/app/file/get_image?name=',
+      studentIconNoLogin:wepy.$instance.globalData.serverUrl + '/app/file/get_image?name=none_userinfo.png',
       dialogShow: false,
       dialogShowOneButton: false,
       buttons: [{text: '稍后登录'}, {text: '确定'}],
       oneButton: [{text: '确定'}],
+      imgUrl:wepy.$instance.globalData.serverUrl + '/app/file/get_image?name=',
     }
 
     methods= {
-      onClickExercise() {
+      onClick(e) {
         let self = this
-        this.$navigate({url:"exercise?sid="+self.userInfo.Sid})
+        this.$navigate({url:e.currentTarget.dataset.url + "?sid=" + self.userInfo.Sid})
       },
 
       onClickLogin() {
-        this.$navigate({url:"login"})
-      },
-
-      onClickWrongProblem() {
         let self = this
-        this.$navigate({url:"wrongproblem?sid="+self.userInfo.Sid})
-      },
-
-      onClickOrderTeacher() {
-        let self = this
-        this.$navigate({url:"create-orderTeacher?sid="+self.userInfo.Sid})
+        if(self.userInfo==null){
+          this.$navigate({url:"login"})
+        }
       },
 
 
@@ -134,6 +109,8 @@
       let self = this
       if(wepy.$instance.globalData.userInfo!=null){
         self.userInfo = wepy.$instance.globalData.userInfo
+      }else{
+        self.userInfo=null
       }
       if(self.userInfo==null && !self.dialogShowOneButton){
         self.dialogShow = true
