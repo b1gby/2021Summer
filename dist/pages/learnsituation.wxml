@@ -1,0 +1,77 @@
+
+        <view class="flex bg-white align-center">
+            <view class="padding flex-sub text-left">
+                
+            </view>
+            <view class="padding flex-sub text-center text-black text-lg text-bold">
+                学情统计
+            </view>
+            <view class="padding flex flex-sub justify-end">
+                
+            </view>
+        </view>
+        
+        <scroll-view scroll-x class="bg-white nav text-center">
+            <view class="cu-item {{index==tabCur?'text-blue cur':''}}"  wx:for="{{tabList}}" wx:key="wx:key" bindtap="tabSelectBar" data-id="{{index}}" wx:for-item="item">
+                {{item.name}}
+            </view>
+        </scroll-view>
+    
+        <view class="cu-card">
+            <view class="cu-item margin-top-xl margin-bottom-xl">
+                <view class="cu-list menu card-menuradius shadow">
+                    <view class="cu-item flex align-center"  wx:if="{{tabCur==0}}">
+                        <view class="text-center flex-sub text-bold">考勤</view>
+                        <view class="text-center flex-sub text-bold">表现</view>
+                        <view class="text-center flex-sub text-bold">作业</view>
+                        <view class="text-center flex-twice text-bold">日期</view>
+                    </view>
+                    <view class="cu-item flex align-center"  wx:else>
+                        <view class="text-center flex-twice text-bold">考试</view>
+                        <view class="text-center flex-sub text-bold">科目</view>
+                        <view class="text-center flex-sub text-bold">成绩</view>
+                        <view class="text-center flex-twice text-bold">日期</view>
+                    </view>
+    
+                    <view class="cu-item flex align-center" wx:if="{{tabCur==0}}" wx:for="{{learnSituationList['daily']}}" wx:key="index" wx:for-item="learnSituation">
+                        
+                        <view class="flex flex-sub">
+                            <view class="text-center flex-sub">
+                                {{learnSituation.LSattendence}}
+                            </view>
+                            <view class="text-center flex-sub">
+                                {{learnSituation.LSperform}}
+                            </view>
+                            <view class="text-center flex-sub">
+                                {{learnSituation.LShomework}}
+                            </view>
+                            <view class="text-center flex-twice">
+                                {{learnSituation.LSdate}}
+                            </view>
+                        </view>
+                    </view>
+    
+                    <view class="cu-item flex align-center" wx:if="{{tabCur==1}}" wx:for="{{learnSituationList['exam']}}" wx:key="index" wx:for-item="learnSituation" data-id="{{index}}">
+                        
+                        <view class="flex flex-sub">
+                            <view class="text-center flex-twice">
+                                {{learnSituation.LSexam}}
+                            </view>
+                            <view class="text-center flex-sub">
+                                {{learnSituation.LSsubject}}
+                            </view>
+                            <view class="text-center flex-sub">
+                                {{learnSituation.LSgrade}}
+                            </view>
+                            <view class="text-center flex-twice">
+                                {{learnSituation.LSdate}}
+                            </view>
+                        </view>
+                    </view>
+    
+    
+                </view>
+            </view>
+    
+            
+        </view>

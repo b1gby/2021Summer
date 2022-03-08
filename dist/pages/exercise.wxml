@@ -1,0 +1,104 @@
+
+    <view class="flex bg-white align-center padding">
+        <view class="padding flex-sub">
+        </view>
+        <view class="padding flex-sub text-center text-black text-lg text-bold">
+            今日习题
+        </view>
+        <view class="padding flex-sub text-right">
+            
+        </view>
+    </view>
+
+    <view  wx:if="{{exerciseList.length != 0}}">
+        
+        <view class="solid-bottom padding">
+            <view class="text-black text-xl text-bold text-cut">
+                {{exerciseList[index]['Exercise'].Etitle}}
+            </view>
+            <view class="flex margin">
+                <view class="flex-start cu-tag radius bg-green text-lg light">
+                    {{exerciseList[index]['Exercise'].Egrade}}
+                </view>
+                <view class="flex-start cu-tag radius bg-brown text-lg light">
+                    {{exerciseList[index]['Exercise'].Esubject}}
+                </view>
+            </view>
+        </view>
+        <view class="padding solid-bottom">
+            <view class="text-xl text-black text-bold">
+                题目描述: {{exerciseList[index]['Exercise'].Edescription}}
+            </view>
+
+            <view class="margin text-lg" wx:if="{{exerciseList[index]['Exercise'].EnameTxt!=''}}">
+                {{exerciseList[index]['Exercise'].EnameTxt}}
+            </view>
+
+            <view class="margin" wx:if="{{exerciseList[index]['Exercise'].EnamePath!=''}}">
+                
+                <view wx:if="{{exerciseList[index]['Exercise'].Etype!='听写'}}">
+                    <view wx:for="{{imageListOfName}}" wx:key="index" wx:for-item="imgOfName">
+                        <image src="{{imgOfName!=imageUrl?imgOfName:''}}" mode="widthFix" bindtap="ViewImageOfName" data-url="{{imgOfName}}"/>
+                    </view>
+                </view>
+
+                <audio src="{{exerciseList[index]['Exercise'].EnamePath?(audioUrl + exerciseList[index]['Exercise'].EnamePath):''}}" wx:else controls="true" name="" author=""/>
+
+            </view>
+            
+            
+        </view>
+
+        <view class="padding solid-bottom">
+            <view class="text-xl text-black text-bold">
+                作答
+            </view>
+
+            <input class="input text-lg margin" bindinput="inputChange" value="{{ exerciseList[index]['Answer']!=''?exerciseList[index]['Answer']:answer[index] }}" disabled="{{inputDisabled[index]}}" type="text" placeholder="请将答案填写在此处"/>
+        </view>
+
+        <view class="padding solid-bottom" wx:if="{{exerciseList[index]['Answer']!=''}}">
+            <view class="text-xl text-black text-bold">
+                正确答案
+            </view>
+            <view class="margin text-lg">
+                {{exerciseList[index]['Exercise'].EanswerTxt}}
+            </view>
+            <view class="margin" wx:if="{{exerciseList[index]['Exercise'].EanswerPath!=''}}">
+                <view wx:for="{{imageListOfAnswer}}" wx:key="index" wx:for-item="imgOfAnswer">
+                    <image src="{{imgOfAnswer!=imageUrl?imgOfAnswer:''}}" mode="widthFix" bindtap="ViewImageOfAnswer" data-url="{{imgOfAnswer}}"/>
+                </view>
+            </view>
+
+            <view class="text-xl text-black text-bold">
+                系统判题
+            </view>
+            <view class="margin text-lg">
+                {{exerciseList[index]['Judge']}}
+            </view>
+        </view>
+
+        <view class="flex padding">
+            <button class="flex-sub cu-btn bg-green shadow-blur round" bindtap="clickLast" data-wpyclicklast-a="">上一题</button>
+            <button class="flex-sub margin-lr cu-btn bg-green shadow-blur round" bindtap="clickSubmit" data-wpyclicksubmit-a="">全部提交</button>
+            <button class="flex-sub cu-btn bg-green shadow-blur round" bindtap="clickNext" data-wpyclicknext-a="">下一题</button>
+        </view>
+
+        <view class="flex padding justify-center text-lg text-bold">
+            {{index+1}}/{{exerciseList.length}}
+        </view>
+
+        <view class="flex padding">
+            <view class="flex-sub margin"/>
+            <button class="flex-twice margin cu-btn bg-pink shadow-blur round" bindtap="clickAskQuestion" data-wpyclickaskquestion-a="">提问老师</button>
+            <view class="flex-sub margin"/>
+        </view>
+    </view>
+
+    <view  wx:else class="margin padding">
+        <view class="flex justify-center text-bold text-lg">今日没有题目</view>
+    </view>
+
+    <mp-dialog title="作答" show="{{showOneButtonDialog}}" bindbuttontap="tapDialogButton" buttons="{{oneButton}}">
+        <view>今日题目已完成</view>
+    </mp-dialog>
