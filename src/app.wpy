@@ -11,6 +11,9 @@
   justify-content: space-between;
   box-sizing: border-box;
 }
+.margin-left-auto{
+  margin-left: auto;
+}
 </style>
 
 <script>
@@ -26,6 +29,8 @@ export default class extends wepy.app {
       'pages/my',
       'pages/edit-password',
       'pages/exercise',
+      'pages/exercise-history',
+      'pages/selected-exercise',
       'pages/register',
       'pages/wrongproblem',
       'pages/wrongproblem-detail',
@@ -69,7 +74,7 @@ export default class extends wepy.app {
     userInfo: null,
     serverUrl: "https://www.kaigestudy.top:8080",
   }
-  
+
   onLaunch() {
     let self = this
     //检查sessionid是否过期
@@ -80,7 +85,7 @@ export default class extends wepy.app {
     }else{
       this.globalData.userInfo = null
     }
-    
+
   }
 
   //检查sessionid是否过期的方法

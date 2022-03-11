@@ -3,14 +3,14 @@
 </style>
 
 <template>
-  
+
   <view class="cu-card">
     <view class="cu-item shadow radius" @tap="onClickLogin">
         <view class="flex align-center">
             <image style="width:80rpx;height:80rpx" class="margin margin-lr" src="{{userInfo==null?studentIconNoLogin:imgUrl + userInfo.Sicon}}" background-size="cover"/>
             <view class="margin">
                 <view class="text-black text-xl text-bold">{{ userInfo==null?'学生未登录（点击登录）':userInfo.Snickname}}</view>
-            </view>   
+            </view>
         </view>
         <view class="flex align-center margin" wx:if="{{userInfo!=null}}">
             <view class="flex-sub text-black text-lg">年级：{{userInfo.SgradeName }}</view>
@@ -21,9 +21,14 @@
         <view class="cu-list menu card-menuradius shadow">
             <view class="cu-item arrow" data-url="exercise" @tap="onClick">
                 <view class="content">
-                    <view>每日习题</view>
+                    <view>今日习题</view>
                 </view>
             </view>
+          <view class="cu-item arrow" data-url="exercise-history" @tap="onClick">
+            <view class="content">
+              <view>习题记录</view>
+            </view>
+          </view>
             <view class="cu-item arrow" data-url="wrongproblem" @tap="onClick">
                 <view class="content">
                     <view>我的错题</view>
@@ -44,7 +49,7 @@
       </view>
     </view>
 
-    
+
 
   <mp-dialog title="登录" show="{{dialogShow}}" bindbuttontap="tapDialogButton" buttons="{{buttons}}">
       <view>您还未登录，现在登录吗？</view>
@@ -61,7 +66,7 @@
   export default class Index extends wepy.page {
     config = {
       usingComponents:{
-          "mp-dialog": "/miniprogram_npm/weui-miniprogram/dialog/dialog",
+          "mp-dialog": "weui-miniprogram/dialog/dialog",
       }
     }
 
@@ -121,7 +126,7 @@
                     mask: true, //显示透明蒙层，防止触摸穿透,
                     success: res => {}
                   });
-                
+
                 },
             })
         },
@@ -132,11 +137,11 @@
 
     onLoad() {
       let self = this
-      
+
     }
 
     onShow() {
-      
+
       let self = this
       if(wepy.$instance.globalData.userInfo!=null){
         self.userInfo = wepy.$instance.globalData.userInfo
