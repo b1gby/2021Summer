@@ -181,7 +181,6 @@ export default class Exercise extends wepy.page {
 		imageListOfName: [],
 		imageListOfAnswer: [],
 		imageListOfMyAnswer: [],
-		currentImageListOfMyAnswer: [],
 	};
 
 	computed = {
@@ -199,23 +198,10 @@ export default class Exercise extends wepy.page {
 		}
 	}
 
-	watch = {
-		index(newValue) {
-			let list = this.imageListOfMyAnswer[newValue];
-			this.currentImageListOfMyAnswer.splice(0, this.currentImageListOfMyAnswer.length);
-			Array.isArray(list) && list.forEach((item) => {
-				this.currentImageListOfMyAnswer.push(item);
-			});
-		}
-	};
-
-
 	methods = {
 		onImageListChange(imageList){
 			let self = this;
-			self.currentImageListOfMyAnswer = imageList;
 			self.imageListOfMyAnswer[self.index] = [...imageList];
-			console.log("imageListOfMyAnswer:", self.imageListOfMyAnswer);
 		},
 		ViewImageOfName(e) {
 			let self = this;
@@ -418,7 +404,6 @@ export default class Exercise extends wepy.page {
 							self.inputDisabled[i] = false;
 						}
 					}
-					self.currentImageListOfMyAnswer = Array.isArray(self.imageListOfMyAnswer[self.index]) ? [...self.imageListOfMyAnswer[self.index]] : [];
 					self.$apply();
 				}
 			}
