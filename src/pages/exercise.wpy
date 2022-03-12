@@ -1,330 +1,437 @@
 <!-- exercise.wpy -->
 
-<style lang="less">
-    page{
-        background-color: white;
-    }
+<style lang='less'>
+page {
+	background-color: white;
+}
 
-    .titlePassBtn{
-        margin-top:20rpx;
-    }
+.titlePassBtn {
+	margin-top: 20 rpx;
+}
 
-    .input {
-        width: 70%;
-    }
+.input {
+	width: 70%;
+}
 
-    .submitBtn{
-        width: 150rpx;
-    }
+.submitBtn {
+	width: 150 rpx;
+}
 
 </style>
 
 <template>
-    <view class="flex bg-white align-center padding">
-        <view class="padding flex-sub">
-        </view>
-        <view class="padding flex-sub text-center text-black text-lg text-bold">
-            今日习题
-        </view>
-        <view class="padding flex-sub text-right">
-            
-        </view>
-    </view>
+	<view class='flex bg-white align-center padding'>
+		<view class='padding flex-sub'>
+		</view>
+		<view class='padding flex-sub text-center text-black text-lg text-bold' wx:if="{{isToday}}">
+			今日习题
+		</view>
+		<view class='padding flex-sub text-center text-black text-lg text-bold' wx:else>
+			{{ Date }}习题
+		</view>
+		<view class='padding flex-sub text-right'>
 
-    <view wx:if="{{exerciseList.length != 0}}">
-        
-        <view class="solid-bottom padding">
-            <view class="text-black text-xl text-bold text-cut">
-                {{exerciseList[index]['Exercise'].Etitle}}
-            </view>
-            <view class="flex margin">
-                <view class="flex-start cu-tag radius bg-green text-lg light">
-                    {{exerciseList[index]['Exercise'].Egrade}}
-                </view>
-                <view class="flex-start cu-tag radius bg-brown text-lg light">
-                    {{exerciseList[index]['Exercise'].Esubject}}
-                </view>
-            </view>
-        </view>
-        <view class="padding solid-bottom">
-            <view class="text-xl text-black text-bold">
-                题目描述: {{exerciseList[index]['Exercise'].Edescription}}
-            </view>
+		</view>
+	</view>
 
-            <view class="margin text-lg" wx:if="{{exerciseList[index]['Exercise'].EnameTxt!=''}}">
-                {{exerciseList[index]['Exercise'].EnameTxt}}
-            </view>
+	<view wx:if='{{exerciseList.length != 0}}'>
 
-            <view class="margin" wx:if="{{exerciseList[index]['Exercise'].EnamePath!=''}}">
-                
-                <view wx:if="{{exerciseList[index]['Exercise'].Etype!='听写'}}" >
-                    <view wx:for="{{imageListOfName}}" wx:key="index" wx:for-item="imgOfName">
-                        <image src="{{imgOfName!=imageUrl?imgOfName:''}}" mode="widthFix" @tap="ViewImageOfName" data-url="{{imgOfName}}"></image>
-                    </view>
-                </view>
+		<view class='solid-bottom padding'>
+			<view class='text-black text-xl text-bold text-cut'>
+				{{ exerciseList[index]['Exercise'].Etitle }}
+			</view>
+			<view class='flex margin'>
+				<view class='flex-start cu-tag radius bg-green text-lg light'>
+					{{ exerciseList[index]['Exercise'].Egrade }}
+				</view>
+				<view class='flex-start cu-tag radius bg-brown text-lg light'>
+					{{ exerciseList[index]['Exercise'].Esubject }}
+				</view>
+			</view>
+		</view>
+		<view class='padding solid-bottom'>
+			<view class='text-xl text-black text-bold'>
+				题目描述: {{ exerciseList[index]['Exercise'].Edescription }}
+			</view>
 
-                <audio src="{{exerciseList[index]['Exercise'].EnamePath?(audioUrl + exerciseList[index]['Exercise'].EnamePath):''}}" wx:else controls="true" name="" author=""></audio>
+			<view class='margin text-lg' wx:if="{{exerciseList[index]['Exercise'].EnameTxt!=''}}">
+				{{ exerciseList[index]['Exercise'].EnameTxt }}
+			</view>
 
-            </view>
-            
-            
-        </view>
+			<view class='margin' wx:if="{{exerciseList[index]['Exercise'].EnamePath!=''}}">
 
-        <view class="padding solid-bottom">
-            <view class="text-xl text-black text-bold">
-                作答
-            </view>
+				<view wx:if="{{exerciseList[index]['Exercise'].Etype!='听写'}}">
+					<view wx:for='{{imageListOfName}}' wx:for-item='imgOfName' wx:key='index'>
+						<image data-url='{{imgOfName}}' mode='widthFix' src="{{imgOfName!=imageUrl?imgOfName:''}}"
+							   @tap='ViewImageOfName'></image>
+					</view>
+				</view>
 
-            <input class="input text-lg margin" @input="inputChange" value="{{ exerciseList[index]['Answer']!=''?exerciseList[index]['Answer']:answer[index] }}" disabled="{{inputDisabled[index]}}" type="text" placeholder="请将答案填写在此处" />
-        </view>
+				<audio
+					author=''
+					controls='true' name=''
+					src="{{exerciseList[index]['Exercise'].EnamePath?(audioUrl + exerciseList[index]['Exercise'].EnamePath):''}}"
+					wx:else></audio>
 
-        <view class="padding solid-bottom" wx:if="{{exerciseList[index]['Answer']!=''}}">
-            <view class="text-xl text-black text-bold">
-                正确答案
-            </view>
-            <view class="margin text-lg">
-                {{exerciseList[index]['Exercise'].EanswerTxt}}
-            </view>
-            <view class="margin" wx:if="{{exerciseList[index]['Exercise'].EanswerPath!=''}}">
-                <view wx:for="{{imageListOfAnswer}}" wx:key="index" wx:for-item="imgOfAnswer">
-                    <image src="{{imgOfAnswer!=imageUrl?imgOfAnswer:''}}" mode="widthFix" @tap="ViewImageOfAnswer" data-url="{{imgOfAnswer}}"></image>
-                </view>
-            </view>
+			</view>
 
-            <view class="text-xl text-black text-bold">
-                系统判题
-            </view>
-            <view class="margin text-lg">
-                {{exerciseList[index]['Judge']}}
-            </view>
-        </view>
 
-        <view class="flex padding">
-            <button class="flex-sub cu-btn bg-green shadow-blur round" @tap="clickLast()">上一题</button>
-            <button class="flex-sub margin-lr cu-btn bg-green shadow-blur round" @tap="clickSubmit()">全部提交</button>
-            <button class="flex-sub cu-btn bg-green shadow-blur round" @tap="clickNext()">下一题</button>
-        </view>
+		</view>
 
-        <view class="flex padding justify-center text-lg text-bold">
-            {{index+1}}/{{exerciseList.length}}
-        </view>
+		<view class='padding solid-bottom'>
+			<view class='text-xl text-black text-bold'>
+				作答
+			</view>
+			<input class='input text-lg margin' disabled='{{inputDisabled[index]}}'
+				   placeholder='请将答案填写在此处'
+				   type='text'
+				   value="{{ exerciseList[index]['Answer']!=''?exerciseList[index]['Answer']:answer[index] }}"
+				   @input='inputChange'
+				   wx:if="{{!exerciseList[index]['hasAnswer'] || exerciseList[index]['Answer'] !== ''}}"
+			/>
+			<image-list
+				:imageList.sync='currentImageListOfMyAnswer'
+				title='{{9}}'
+				@imageListChange.user='onImageListChange'
+				:type.sync="hasAnswer"
+			></image-list>
+		</view>
 
-        <view class="flex padding">
-            <view class="flex-sub margin"></view>
-            <button class="flex-twice margin cu-btn bg-pink shadow-blur round" @tap="clickAskQuestion()">提问老师</button>
-            <view class="flex-sub margin"></view>
-        </view>
-    </view>
 
-    <view wx:else class="margin padding">
-        <view class="flex justify-center text-bold text-lg">今日没有题目</view>
-    </view>
+		<view class='padding solid-bottom' wx:if="{{exerciseList[index]['hasAnswer']}}">
+			<view class='text-xl text-black text-bold'>
+				正确答案
+			</view>
+			<view class='margin text-lg'>
+				{{ exerciseList[index]['Exercise'].EanswerTxt }}
+			</view>
+			<view class='margin' wx:if="{{exerciseList[index]['Exercise'].EanswerPath!=''}}">
+				<view wx:for='{{imageListOfAnswer}}' wx:for-item='imgOfAnswer' wx:key='index'>
+					<image data-url='{{imgOfAnswer}}' mode='widthFix' src="{{imgOfAnswer!=imageUrl?imgOfAnswer:''}}"
+						   @tap='ViewImageOfAnswer'></image>
+				</view>
+			</view>
 
-    <mp-dialog title="作答" show="{{showOneButtonDialog}}" bindbuttontap="tapDialogButton" buttons="{{oneButton}}">
-        <view>今日题目已完成</view>
-    </mp-dialog>
+			<view class='text-xl text-black text-bold'>
+				系统判题
+			</view>
+			<view class='margin text-lg'>
+				{{ exerciseList[index]['Judge'] }}
+			</view>
+		</view>
+
+		<view class='flex padding'>
+			<button class='flex-sub cu-btn bg-green shadow-blur round' @tap='clickLast()'>上一题</button>
+			<button class='flex-sub margin-lr cu-btn bg-green shadow-blur round' @tap='clickSubmit()'>全部提交</button>
+			<button class='flex-sub cu-btn bg-green shadow-blur round' @tap='clickNext()'>下一题</button>
+		</view>
+
+		<view class='flex padding justify-center text-lg text-bold'>
+			{{ index + 1 }}/{{ exerciseList.length }}
+		</view>
+
+		<view class='flex padding'>
+			<view class='flex-sub margin'></view>
+			<button class='flex-twice margin cu-btn bg-pink shadow-blur round' @tap='clickAskQuestion()'>提问老师</button>
+			<view class='flex-sub margin'></view>
+		</view>
+	</view>
+
+	<view class='margin padding' wx:else>
+		<view class='flex justify-center text-bold text-lg'>今日没有题目</view>
+	</view>
+
+	<mp-dialog bindbuttontap='tapDialogButton' buttons='{{oneButton}}' show='{{showOneButtonDialog}}' title='作答'>
+		<view>今日题目已完成</view>
+	</mp-dialog>
 </template>
-    
+
 <script>
-import wepy from 'wepy'
-import Panel from '@/components/panel' // alias example
+import wepy from 'wepy';
+import ImageList from '@/components/image-list';
+import { uploadImageList } from '@/common/uploadFile';
+import moment from 'moment';
 
-export default class Exercise extends wepy.page{
-    config = {
-        usingComponents: {
-            "mp-dialog": "/miniprogram_npm/weui-miniprogram/dialog/dialog",
-            "mp-gallery": "weui-miniprogram/gallery/gallery",
-        }
-        
-    }
-    
-    components = {
-      panel: Panel
-    }
+export default class Exercise extends wepy.page {
+	config = {
+		usingComponents: {
+			'mp-dialog': '/miniprogram_npm/weui-miniprogram/dialog/dialog',
+			'mp-gallery': 'weui-miniprogram/gallery/gallery'
+		}
 
-    data={
-        Sid: null,
-        exerciseList: [],
-        index: 0,
-        answer: [],
-        showOneButtonDialog: false,
-        oneButton: [{text: '确定'}],
-        inputDisabled:null,
-        imageUrl:wepy.$instance.globalData.serverUrl + '/app/file/get_image?name=',
-        audioUrl:wepy.$instance.globalData.serverUrl + '/app/file/get_audio?name=',
-        imageListOfName: [],
-        imageListOfAnswer: [],
-    }
+	};
 
-    methods = {
-        ViewImageOfName(e) {
-            let self = this
-            console.log(self.imageUrl + e.currentTarget.dataset.url)
-            wx.previewImage({
-                urls: self.imageListOfName,
-                current: self.imageUrl + e.currentTarget.dataset.url
-            });
-        },
+	components = {
+		'image-list': ImageList,
+	};
 
-        ViewImageOfAnswer(e) {
-            let self = this
-            console.log(self.imageUrl + e.currentTarget.dataset.url)
-            wx.previewImage({
-                urls: self.imageListOfAnswer,
-                current: self.imageUrl + e.currentTarget.dataset.url
-            });
-        },
+	data = {
+		Sid: null,
+		Date: moment().format('YYYY-MM-DD'),
+		isToday: true,
+		exerciseList: [],
+		index: 0,
+		answer: [],
+		showOneButtonDialog: false,
+		oneButton: [{ text: '确定' }],
+		inputDisabled: null,
+		imageUrl: wepy.$instance.globalData.serverUrl + '/app/file/get_image?name=',
+		audioUrl: wepy.$instance.globalData.serverUrl + '/app/file/get_audio?name=',
+		imageOfMyAnswerUrl: wepy.$instance.globalData.serverUrl + "/app/file/get_image?name=/my_answer",
+		imageListOfName: [],
+		imageListOfAnswer: [],
+		imageListOfMyAnswer: [],
+		currentImageListOfMyAnswer: [],
+	};
 
-        clickLast(){
-            let self = this
-            if(self.index!=0){
-                self.index--;
-            }else{
-                wepy.showToast({
-                  title: '这是第一道题', //提示的内容,
-                  icon: 'none', //图标,
-                  duration: 2000, //延迟时间,
-                  mask: true, //显示透明蒙层，防止触摸穿透,
-                  success: res => {}
-                });
-                
-            }
-        },
+	computed = {
+		hasAnswer () {
+			if(typeof this.exerciseList[this.index] === "undefined"){
+				return "show";
+			}
+			return this.exerciseList[this.index]['hasAnswer'] ? 'show' : 'add';
+		},
+		currentImageListOfMyAnswer(){
+			if(typeof this.imageListOfMyAnswer[this.index] === "undefined"){
+				return [];
+			}
+			return this.imageListOfMyAnswer[this.index];
+		}
+	}
 
-        clickNext(){
-            let self = this
-            if(self.index!=self.exerciseList.length-1){
-                self.index++;
-            }else{
-                wepy.showToast({
-                  title: '已经是最后一题啦', //提示的内容,
-                  icon: 'none', //图标,
-                  duration: 2000, //延迟时间,
-                  mask: true, //显示透明蒙层，防止触摸穿透,
-                  success: res => {}
-                });
-                
-            }
-        },
+	watch = {
+		index(newValue) {
+			let list = this.imageListOfMyAnswer[newValue];
+			this.currentImageListOfMyAnswer.splice(0, this.currentImageListOfMyAnswer.length);
+			Array.isArray(list) && list.forEach((item) => {
+				this.currentImageListOfMyAnswer.push(item);
+			});
+		}
+	};
 
-        clickSubmit() {
-            let self = this;
 
-            // 检查题目是否全部完成
-            let allSubmit = true
-            for (let i=0;i<self.exerciseList.length;i++){
-                if(self.exerciseList[i]['Answer']==""){
-                    allSubmit = false
-                }
-            }
+	methods = {
+		onImageListChange(imageList){
+			let self = this;
+			self.currentImageListOfMyAnswer = imageList;
+			self.imageListOfMyAnswer[self.index] = [...imageList];
+			console.log("imageListOfMyAnswer:", self.imageListOfMyAnswer);
+		},
+		ViewImageOfName(e) {
+			let self = this;
+			console.log(self.imageUrl + e.currentTarget.dataset.url);
+			wx.previewImage({
+				urls: self.imageListOfName,
+				current: self.imageUrl + e.currentTarget.dataset.url
+			});
+		},
 
-            if(allSubmit){
-                self.showOneButtonDialog = true;
-                return
-            }
+		ViewImageOfAnswer(e) {
+			let self = this;
+			console.log(self.imageUrl + e.currentTarget.dataset.url);
+			wx.previewImage({
+				urls: self.imageListOfAnswer,
+				current: self.imageUrl + e.currentTarget.dataset.url
+			});
+		},
 
-            let newData ={
-                answer:JSON.stringify(self.answer)
-            }
+		clickLast() {
+			let self = this;
+			if (self.index !== 0) {
+				self.index--;
+			} else {
+				wepy.showToast({
+					title: '这是第一道题', //提示的内容,
+					icon: 'none', //图标,
+					duration: 2000, //延迟时间,
+					mask: true, //显示透明蒙层，防止触摸穿透,
+				});
 
-            //清空答对题数目
-            self.rightNum = 0
+			}
+		},
 
-            let sendAnswer = {}
-            for(let i=0;i<self.exerciseList.length;i++){
-                sendAnswer[self.exerciseList[i]['Exercise'].Eid] = self.answer[i]
-            }
-            wepy.request({
-                url:wepy.$instance.globalData.serverUrl + '/app/today/judge_today_exercise',
-                method: 'GET',
-                data:{
-                    "Sid": self.Sid,
-                    "SendAnswer":sendAnswer,
-                },
-                success:function(res) {
-                    wx.showToast({
-                        title:"提交成功"
-                    })
-                    self.getTodayExercise()
-                },
-            })
-        },
+		clickNext() {
+			let self = this;
+			if (self.index !== self.exerciseList.length - 1) {
+				self.index++;
+			} else {
+				wepy.showToast({
+					title: '已经是最后一题啦', //提示的内容,
+					icon: 'none', //图标,
+					duration: 2000, //延迟时间,
+					mask: true, //显示透明蒙层，防止触摸穿透,
+					success: res => {
+					}
+				});
 
-        clickAskQuestion(){
-            let self = this
+			}
+		},
 
-            wepy.request({
-                url:wepy.$instance.globalData.serverUrl + '/app/student/insert_ask_question',
-                method: 'POST',
-                data:{
-                    "Sid": Number(self.Sid),
-                    "Eid": Number(self.exerciseList[self.index]['Exercise'].Eid),
-                },
-                success:function(res) {
-                    wx.showToast({
-                        title:"提问成功"
-                    })
-                },
-            })
-        },
+		async clickSubmit() {
+			let self = this;
+			let incompleteExerciseKey = -1;
+			// 检查题目是否全部完成
+			for (const exerciseKey in self.exerciseList) {
+				const answer = self.answer[exerciseKey];
+				const imageListOfMyAnswer = self.imageListOfMyAnswer[exerciseKey];
+				if(!(self.exerciseList[exerciseKey]['hasAnswer'] || answer || (Array.isArray(imageListOfMyAnswer) && imageListOfMyAnswer.length > 0))){
+					incompleteExerciseKey = exerciseKey;
+					break;
+				}
+			}
+			if (incompleteExerciseKey >= 0) {
+				wx.showModal({
+					showCancel: false,
+					content: `第${Number(incompleteExerciseKey) + 1}道题尚未完成`,
+					success(res) {
+						if (res.confirm) {
+							self.index = Number(incompleteExerciseKey);
+							self.$apply();
+						}
+					}
+				});
+				return;
+			}
+			const serverImageUrlList = {};
 
-        tapDialogButton(e) {
-            let self = this;
-            self.showOneButtonDialog = false
-        },
+			//清空答对题数目
+			self.rightNum = 0;
 
-        inputChange(e) {
-            let self = this
-            self.answer[self.index] = e.detail.value.trim()   
-        }
-    }
+			let sendAnswer = {};
+			for (let i = 0; i < self.exerciseList.length; i++) {
+				const exercise = self.exerciseList[i];
+				if(exercise['hasAnswer']){
+					continue;
+				}
+				sendAnswer[self.exerciseList[i]['Exercise'].Eid] = self.answer[i];
+				const imageList = self.imageListOfMyAnswer[i];
+				if(Array.isArray(imageList) && imageList.length > 0){
+					wx.showLoading({
+						title: `第${Number(i) + 1}道题图片答案上传中`,
+					})
+					const { imageUrlList, failedImageList } = await uploadImageList(imageList, "/my_answer");
+					wx.hideLoading()
+					if(failedImageList.length !== 0){
+						console.log(imageUrlList, failedImageList)
+						wx.showModal({
+							showCancel: false,
+							content: `第${Number(i) + 1}道题图片答案上传失败`,
+							success(res) {
+								if (res.confirm) {
+									self.index = Number(i);
+									self.$apply();
+								}
+							}
+						})
+						return;
+					}else{
+						serverImageUrlList[self.exerciseList[i]['Exercise'].Eid] = imageUrlList.join(";");
+					}
+				}
+			}
+			console.log(Object.keys(sendAnswer));
+			if(Object.keys(sendAnswer).length === 0){
+				wx.showModal({
+					showCancel: false,
+					content: `作业都已提交`,
+				})
+				return;
+			}
+			wepy.request({
+				url: wepy.$instance.globalData.serverUrl + '/app/today/judge_exercise_with_date',
+				method: 'GET',
+				data: {
+					'Sid': self.Sid,
+					'Date': self.Date,
+					'SendAnswer': sendAnswer,
+					'SendAnswerPath': serverImageUrlList,
+				},
+				success: function(res) {
+					wx.showToast({
+						title: '提交成功'
+					});
+					self.getTodayExercise();
+				}
+			});
+		},
 
-    getTodayExercise(){
-        let self = this
-        let today = new Date()
-        wepy.request({
-            url:wepy.$instance.globalData.serverUrl + '/app/today/get_today_exercise',
-            data:{
-                Sid:self.Sid,
-                Date:today.toLocaleDateString()
-            },
-            method: 'GET',
-            header: wepy.$instance.setHeader(),
-            success:function(res) {
-                console.log(res)
-                if(res.data.Code != 2 && res.data.Msg != "No exercise!"){
-                    self.exerciseList = res.data.Data
-                    self.inputDisabled = new Array(self.exerciseList.length)
+		clickAskQuestion() {
+			let self = this;
 
-                    for(let i=0;i<self.exerciseList.length;i++){
-                        if(self.exerciseList[i]['Exercise'].EnamePath!=""){
-                            let tmpList = self.exerciseList[i]['Exercise'].EnamePath.split(";")
-                            self.imageListOfName = tmpList.map(x => self.imageUrl + x)
-                        }
-                        if(self.exerciseList[i]['Exercise'].EanswerPath!=""){
-                            let tmpList = self.exerciseList[i]['Exercise'].EanswerPath.split(";")
-                            self.imageListOfAnswer = tmpList.map(x => self.imageUrl + x)
-                        }
-                        if(self.exerciseList[i]["Answer"] != ""){
-                            self.inputDisabled[i] = true
-                        } else{
-                            self.inputDisabled[i] = false
-                        }
-                    }
-                    self.$apply()
-                }
-                
-                
-            },
-        })
-    }
-    
-    onLoad(options) {
-        let self = this;
+			wepy.request({
+				url: wepy.$instance.globalData.serverUrl + '/app/student/insert_ask_question',
+				method: 'POST',
+				data: {
+					'Sid': Number(self.Sid),
+					'Eid': Number(self.exerciseList[self.index]['Exercise'].Eid)
+				},
+				success: function(res) {
+					wx.showToast({
+						title: '提问成功'
+					});
+				}
+			});
+		},
 
-        self.Sid = options.sid
-        
-        self.getTodayExercise()
-    } 
+		tapDialogButton(e) {
+			let self = this;
+			self.showOneButtonDialog = false;
+		},
+
+		inputChange(e) {
+			console.log("input change", e.detail.value.trim());
+			let self = this;
+			self.answer[self.index] = e.detail.value.trim();
+		}
+	};
+
+	getTodayExercise() {
+		let self = this;
+		wepy.request({
+			url: wepy.$instance.globalData.serverUrl + '/app/today/get_exercise_with_date',
+			data: {
+				Sid: self.Sid,
+				Date: self.Date,
+			},
+			method: 'GET',
+			header: wepy.$instance.setHeader(),
+			success: function(res) {
+				if (res.data.Code !== 2 && res.data.Msg !== 'No exercise!') {
+					self.exerciseList = res.data.Data;
+					self.inputDisabled = new Array(self.exerciseList.length);
+
+					for (let i = 0; i < self.exerciseList.length; i++) {
+						if (self.exerciseList[i]['Exercise'].EnamePath !== '') {
+							let tmpList = self.exerciseList[i]['Exercise'].EnamePath.split(';');
+							self.imageListOfName = tmpList.map(x => self.imageUrl + x);
+						}
+						if (self.exerciseList[i]['Exercise'].EanswerPath !== '') {
+							let tmpList = self.exerciseList[i]['Exercise'].EanswerPath.split(';');
+							self.imageListOfAnswer = tmpList.map(x => self.imageUrl + x);
+						}
+						if (self.exerciseList[i]['Answer'] !== '' || self.exerciseList[i]['AnswerPath'] !== '') {
+							if(self.exerciseList[i]['AnswerPath'] !== ''){
+								self.imageListOfMyAnswer[i] = self.exerciseList[i]['AnswerPath'].split(";").map(x => self.imageOfMyAnswerUrl + "/" + x)
+							}
+							self.inputDisabled[i] = true;
+						} else {
+							self.inputDisabled[i] = false;
+						}
+					}
+					self.currentImageListOfMyAnswer = Array.isArray(self.imageListOfMyAnswer[self.index]) ? [...self.imageListOfMyAnswer[self.index]] : [];
+					self.$apply();
+				}
+			}
+		});
+	}
+
+	onLoad(options) {
+		let self = this;
+
+		self.Sid = options.sid;
+		self.Date = options.date ? options.date : moment().format('YYYY-MM-DD');
+		self.isToday = self.Date === moment().format('YYYY-MM-DD');
+		self.getTodayExercise();
+	}
 }
 </script>

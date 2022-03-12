@@ -30,7 +30,6 @@ export default class extends wepy.app {
       'pages/edit-password',
       'pages/exercise',
       'pages/exercise-history',
-      'pages/selected-exercise',
       'pages/register',
       'pages/wrongproblem',
       'pages/wrongproblem-detail',
