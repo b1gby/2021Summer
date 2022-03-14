@@ -21,14 +21,8 @@ page {
 
 <template>
 	<view class='flex bg-white align-center padding'>
-		<view class='padding flex-sub text-center text-black text-lg text-bold' wx:if="{{isToday}}">
-			今日习题
-		</view>
-		<view class='padding flex-sub text-center text-black text-lg text-bold' wx:else>
-			{{ Date }}习题
-		</view>
-		<view class='padding flex-sub text-right'>
-
+		<view class='padding flex-sub text-center text-black text-lg text-bold'>
+			{{ isToday ? "今日":Date}}习题
 		</view>
 	</view>
 
@@ -68,7 +62,7 @@ page {
 				<audio
 					author=''
 					controls='true' name=''
-					src="{{audioUrl + exerciseList[index].EnamePath[0]}}"
+					src="{{exerciseList[index].EnamePath[0]}}"
 					wx:else
 				></audio>
 			</block>
@@ -114,7 +108,7 @@ page {
 			</block>
 			<block wx:if="{{hasComment}}">
 				<view class='text-xl text-black text-bold'>
-					系统判题
+					老师评价
 				</view>
 				<view class='margin text-lg'>
 					{{ exerciseList[index].TEcomment }}
@@ -158,6 +152,7 @@ import wepy from 'wepy';
 import ImageList from '@/components/image-list';
 import { uploadImageList } from '@/common/uploadFile';
 import moment from 'moment';
+import { AUDIO_URL, IMAGE_OF_MY_ANSWER_URL, IMAGE_URL } from '@/common/url';
 
 export default class Exercise extends wepy.page {
 	config = {
@@ -182,13 +177,6 @@ export default class Exercise extends wepy.page {
 		index: 0,
 		showOneButtonDialog: false,
 		oneButton: [{ text: '确定' }],
-		inputDisabled: null,
-		imageUrl: wepy.$instance.globalData.serverUrl + '/app/file/get_image?name=',
-		audioUrl: wepy.$instance.globalData.serverUrl + '/app/file/get_audio?name=',
-		imageOfMyAnswerUrl: wepy.$instance.globalData.serverUrl + "/app/file/get_image?name=/my_answer",
-		imageListOfName: [],
-		imageListOfAnswer: [],
-		imageListOfMyAnswer: [],
 	};
 
 	computed = {
@@ -216,16 +204,6 @@ export default class Exercise extends wepy.page {
 	}
 
 	methods = {
-
-
-		ViewImageOfAnswer(e) {
-			let self = this;
-			console.log(self.imageUrl + e.currentTarget.dataset.url);
-			wx.previewImage({
-				urls: self.imageListOfAnswer,
-				current: self.imageUrl + e.currentTarget.dataset.url
-			});
-		},
 
 		clickLast() {
 			let self = this;
@@ -286,17 +264,13 @@ export default class Exercise extends wepy.page {
 				});
 				return;
 			}
-			const serverImageUrlList = {};
 
 			let changedExerciseList = [];
-			let sendAnswer = {};
 			for (let i = 0; i < self.exerciseList.length; i++) {
 				const exercise = { ...self.exerciseList[i] };
 				if(exercise.TEstatus > 1){
-					console.log("already done!");
 					continue;
 				}
-				// sendAnswer[self.exerciseList[i]['Exercise'].Eid] = self.answer[i];
 				const imageList = exercise.TEanswerPath;
 				if(Array.isArray(imageList) && imageList.length > 0){
 					wx.showLoading({
@@ -319,12 +293,10 @@ export default class Exercise extends wepy.page {
 						return;
 					}else{
 						exercise.TEanswerPath = imageUrlList.join(";");
-						// serverImageUrlList[self.exerciseList[i]['Exercise'].Eid] = imageUrlList.join(";");
 					}
 				}
 				changedExerciseList.push(exercise);
 			}
-			console.log(changedExerciseList);
 			if(changedExerciseList.length === 0){
 				wx.showModal({
 					showCancel: false,
@@ -399,12 +371,13 @@ export default class Exercise extends wepy.page {
 				if (res.data.Code !== 2 && res.data.Msg !== 'No exercise!' && Array.isArray(res.data.Data)) {
 					self.exerciseList = res.data.Data.map((exercise) => {
 						const {EnamePath, EanswerPath, TEanswerPath, Etype} = exercise;
-						exercise.EnamePath = EnamePath !== "" ? EnamePath.split(";").map(x => (Etype === "听写" ? self.audioUrl : self.imageUrl) + "/" + x) : [];
-						exercise.EanswerPath = EanswerPath !== "" ? EanswerPath.split(";").map(x => self.imageOfMyAnswerUrl + "/" + x) : [];
-						exercise.TEanswerPath = TEanswerPath !== "" ? TEanswerPath.split(";").map(x => self.imageOfMyAnswerUrl + "/" + x) : [];
+						exercise.EnamePath = EnamePath !== "" ? EnamePath.split(";").
+							map(x => (Etype === "听写" ? AUDIO_URL : IMAGE_URL) + x)
+							: [];
+						exercise.EanswerPath = EanswerPath !== "" ? EanswerPath.split(";").map(x => IMAGE_URL + x) : [];
+						exercise.TEanswerPath = TEanswerPath !== "" ? TEanswerPath.split(";").map(x => IMAGE_OF_MY_ANSWER_URL + x) : [];
 						return exercise
 					});
-					console.log(res)
 					self.$apply();
 				}
 			}
