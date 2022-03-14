@@ -1,17 +1,17 @@
 <template>
-	<view class='cu-bar bg-white margin-top' wx:if="{{type === 'add'}}">
-		<view class='action'>
-			图片上传
+	<block wx:if="{{type === 'add' || imageList.length > 0}}">
+		<view class='cu-bar bg-white margin-top' wx:if="{{type === 'add'}}">
+			<view class='action'>
+				图片上传
+			</view>
+			<view class='action'>
+				{{ imageList.length }}/{{ maxSize }}
+			</view>
 		</view>
-		<view class='action'>
-			{{ imageList.length }}/{{ maxSize }}
-		</view>
-	</view>
-	<view class='cu-form-group'>
-		<view class='grid col-4 grid-square flex-sub'>
-			<view bindtap='ViewImage' class='bg-img' data-url='{{imageList[index]}}' wx:for='{{imageList}}'
+		<view class='{{listWrapperClass}}'>
+			<view bindtap='ViewImage' class='bg-img' wx:for='{{imageList}}'
 				  wx:key='{{index}}'>
-				<image mode='aspectFill' src='{{imageList[index]}}'></image>
+				<image mode='{{mode}}' src='{{imageList[index]}}'></image>
 				<view catchtap='DelImg' class='cu-tag bg-red' data-index='{{index}}' wx:if="{{imageList.length < maxSize && type === 'add'}}">
 					<text class='cuIcon-close'></text>
 				</view>
@@ -20,12 +20,16 @@
 				<text class='cuIcon-cameraadd'></text>
 			</view>
 		</view>
-	</view>
+	</block>
 </template>
 <script>
 import wepy from 'wepy';
-
 export default class ImageList extends wepy.component {
+
+	data = {
+		listWrapperClass: "grid col-4 grid-square flex-sub",
+		mode: "aspectFill",
+	}
 
 	props = {
 		maxSize: {
@@ -39,8 +43,21 @@ export default class ImageList extends wepy.component {
 		type:{
 			type:String,
 			default: "add"
-		}
+		},
 	};
+
+	computed = {
+		listWrapperClass(){
+			if(this.type === "add"){
+				return "grid col-4 grid-square flex-sub";
+			}else{
+				return "grid col-1";
+			}
+		},
+		mode(){
+			return this.type === 'add' ? 'aspectFill' : 'widthFix';
+		}
+	}
 
 	methods = {
 		ChooseImage() {
