@@ -38,86 +38,95 @@ page {
 
 		<view class='solid-bottom padding'>
 			<view class='text-black text-xl text-bold text-cut'>
-				{{ exerciseList[index]['Exercise'].Etitle }}
+				{{ exerciseList[index].Etitle }}
 			</view>
 			<view class='flex margin'>
 				<view class='flex-start cu-tag radius bg-green text-lg light'>
-					{{ exerciseList[index]['Exercise'].Egrade }}
+					{{ exerciseList[index].Egrade }}
 				</view>
 				<view class='flex-start cu-tag radius bg-brown text-lg light'>
-					{{ exerciseList[index]['Exercise'].Esubject }}
+					{{ exerciseList[index].Esubject }}
 				</view>
 			</view>
 		</view>
 		<view class='padding solid-bottom'>
 			<view class='text-xl text-black text-bold'>
-				题目描述: {{ exerciseList[index]['Exercise'].Edescription }}
+				题目描述: {{ exerciseList[index].Edescription }}
 			</view>
 
-			<view class='margin text-lg' wx:if="{{exerciseList[index]['Exercise'].EnameTxt!=''}}">
-				{{ exerciseList[index]['Exercise'].EnameTxt }}
+			<view class='margin text-lg' wx:if="{{exerciseList[index].EnameTxt!=''}}">
+				{{ exerciseList[index].EnameTxt }}
 			</view>
 
-			<view class='margin' wx:if="{{exerciseList[index]['Exercise'].EnamePath!=''}}">
-
-				<view wx:if="{{exerciseList[index]['Exercise'].Etype!='听写'}}">
-					<view wx:for='{{imageListOfName}}' wx:for-item='imgOfName' wx:key='index'>
-						<image data-url='{{imgOfName}}' mode='widthFix' src="{{imgOfName!=imageUrl?imgOfName:''}}"
-							   @tap='ViewImageOfName'></image>
-					</view>
-				</view>
-
+			<block wx:if="{{exerciseList[index].EnamePath.length > 0}}">
+				<block wx:if="{{exerciseList[index].Etype!=='听写'}}">
+					<name-image-list
+						:imageList.sync='currentImageListOfName'
+						title='{{9}}'
+						type='show'
+					>
+					</name-image-list>
+				</block>
 				<audio
 					author=''
 					controls='true' name=''
-					src="{{exerciseList[index]['Exercise'].EnamePath?(audioUrl + exerciseList[index]['Exercise'].EnamePath):''}}"
-					wx:else></audio>
-
-			</view>
-
-
+					src="{{audioUrl + exerciseList[index].EnamePath[0]}}"
+					wx:else
+				></audio>
+			</block>
 		</view>
 
 		<view class='padding solid-bottom'>
 			<view class='text-xl text-black text-bold'>
 				作答
 			</view>
-			<input class='input text-lg margin' disabled='{{inputDisabled[index]}}'
+			<view class='text-lg' wx:if="{{hasAnswer && exerciseList[index].TEanswerTxt !== ''}}">
+				{{ exerciseList[index].TEanswerTxt }}
+			</view>
+			<input class='input text-lg margin' disabled='{{hasAnswer}}'
 				   placeholder='请将答案填写在此处'
 				   type='text'
-				   value="{{ exerciseList[index]['Answer']!=''?exerciseList[index]['Answer']:answer[index] }}"
+				   value="{{exerciseList[index].TEanswerTxt}}"
 				   @input='inputChange'
-				   wx:if="{{!exerciseList[index]['hasAnswer'] || exerciseList[index]['Answer'] !== ''}}"
+				   wx:elif="{{!hasAnswer}}"
 			/>
 			<image-list
 				:imageList.sync='currentImageListOfMyAnswer'
 				title='{{9}}'
 				@imageListChange.user='onImageListChange'
-				:type.sync="hasAnswer"
+				:type.sync="imageListType"
 			></image-list>
 		</view>
 
 
-		<view class='padding solid-bottom' wx:if="{{exerciseList[index]['hasAnswer']}}">
+		<view class='padding solid-bottom' wx:if="{{hasAnswer}}">
 			<view class='text-xl text-black text-bold'>
 				正确答案
 			</view>
 			<view class='margin text-lg'>
-				{{ exerciseList[index]['Exercise'].EanswerTxt }}
+				{{ exerciseList[index].EanswerTxt }}
 			</view>
-			<view class='margin' wx:if="{{exerciseList[index]['Exercise'].EanswerPath!=''}}">
-				<view wx:for='{{imageListOfAnswer}}' wx:for-item='imgOfAnswer' wx:key='index'>
-					<image data-url='{{imgOfAnswer}}' mode='widthFix' src="{{imgOfAnswer!=imageUrl?imgOfAnswer:''}}"
-						   @tap='ViewImageOfAnswer'></image>
+			<block wx:if="{{currentImageListOfAnswer.length > 0}}">
+				<answer-image-list
+					:imageList.sync='currentImageListOfAnswer'
+					title='{{9}}'
+					type='show'
+				>
+				</answer-image-list>
+			</block>
+			<block wx:if="{{hasComment}}">
+				<view class='text-xl text-black text-bold'>
+					系统判题
 				</view>
-			</view>
-
-			<view class='text-xl text-black text-bold'>
-				系统判题
-			</view>
-			<view class='margin text-lg'>
-				{{ exerciseList[index]['Judge'] }}
-			</view>
+				<view class='margin text-lg'>
+					{{ exerciseList[index].TEcomment }}
+				</view>
+			</block>
+			<block wx:else>
+				<view class='text-xl text-black text-bold'>
+					尚无评价
+				</view>
+			</block>
 		</view>
 
 		<view class='flex padding'>
@@ -156,13 +165,15 @@ export default class Exercise extends wepy.page {
 	config = {
 		usingComponents: {
 			'mp-dialog': '/miniprogram_npm/weui-miniprogram/dialog/dialog',
-			'mp-gallery': 'weui-miniprogram/gallery/gallery'
+			'mp-gallery': 'weui-miniprogram/gallery/gallery',
 		}
 
 	};
 
 	components = {
 		'image-list': ImageList,
+		'name-image-list': ImageList,
+		'answer-image-list': ImageList,
 	};
 
 	data = {
@@ -171,7 +182,6 @@ export default class Exercise extends wepy.page {
 		isToday: true,
 		exerciseList: [],
 		index: 0,
-		answer: [],
 		showOneButtonDialog: false,
 		oneButton: [{ text: '确定' }],
 		inputDisabled: null,
@@ -185,32 +195,30 @@ export default class Exercise extends wepy.page {
 
 	computed = {
 		hasAnswer () {
-			if(typeof this.exerciseList[this.index] === "undefined"){
-				return "show";
-			}
-			return this.exerciseList[this.index]['hasAnswer'] ? 'show' : 'add';
+			return this.exerciseList[this.index] && this.exerciseList[this.index].TEstatus > 1;
+		},
+		hasComment(){
+			return this.exerciseList[this.index] && this.exerciseList[this.index].TEcomment.length > 0;
+		},
+		imageListType (){
+			return this.exerciseList[this.index] && this.exerciseList[this.index].TEstatus > 1 ? "show" : "add";
 		},
 		currentImageListOfMyAnswer(){
-			if(typeof this.imageListOfMyAnswer[this.index] === "undefined"){
-				return [];
-			}
-			return this.imageListOfMyAnswer[this.index];
+			let imageList = this.exerciseList[this.index] ? this.exerciseList[this.index].TEanswerPath : undefined;
+			return typeof imageList === 'undefined' ? [] : imageList;
+		},
+		currentImageListOfName(){
+			let imageList = this.exerciseList[this.index] ? this.exerciseList[this.index].EnamePath : undefined;
+			return typeof imageList === 'undefined' ? [] : imageList;
+		},
+		currentImageListOfAnswer(){
+			let imageList = this.exerciseList[this.index] ? this.exerciseList[this.index].EanswerPath : undefined;
+			return typeof imageList === 'undefined' ? [] : imageList;
 		}
 	}
 
 	methods = {
-		onImageListChange(imageList){
-			let self = this;
-			self.imageListOfMyAnswer[self.index] = [...imageList];
-		},
-		ViewImageOfName(e) {
-			let self = this;
-			console.log(self.imageUrl + e.currentTarget.dataset.url);
-			wx.previewImage({
-				urls: self.imageListOfName,
-				current: self.imageUrl + e.currentTarget.dataset.url
-			});
-		},
+
 
 		ViewImageOfAnswer(e) {
 			let self = this;
@@ -254,13 +262,15 @@ export default class Exercise extends wepy.page {
 		},
 
 		async clickSubmit() {
+			console.log(this.exerciseList);
 			let self = this;
 			let incompleteExerciseKey = -1;
 			// 检查题目是否全部完成
 			for (const exerciseKey in self.exerciseList) {
-				const answer = self.answer[exerciseKey];
-				const imageListOfMyAnswer = self.imageListOfMyAnswer[exerciseKey];
-				if(!(self.exerciseList[exerciseKey]['hasAnswer'] || answer || (Array.isArray(imageListOfMyAnswer) && imageListOfMyAnswer.length > 0))){
+				this.exerciseList[exerciseKey].TEanswerTxt = this.exerciseList[exerciseKey].TEanswerTxt.trim();
+				const answer = this.exerciseList[exerciseKey].TEanswerTxt
+				const imageListOfMyAnswer = this.exerciseList[exerciseKey].TEanswerPath
+				if(!(self.exerciseList[exerciseKey].TEstatus > 1 || answer || (Array.isArray(imageListOfMyAnswer) && imageListOfMyAnswer.length > 0))){
 					incompleteExerciseKey = exerciseKey;
 					break;
 				}
@@ -280,20 +290,19 @@ export default class Exercise extends wepy.page {
 			}
 			const serverImageUrlList = {};
 
-			//清空答对题数目
-			self.rightNum = 0;
-
+			let changedExerciseList = [];
 			let sendAnswer = {};
 			for (let i = 0; i < self.exerciseList.length; i++) {
-				const exercise = self.exerciseList[i];
-				if(exercise['hasAnswer']){
+				const exercise = { ...self.exerciseList[i] };
+				if(exercise.TEstatus > 1){
+					console.log("already done!");
 					continue;
 				}
-				sendAnswer[self.exerciseList[i]['Exercise'].Eid] = self.answer[i];
-				const imageList = self.imageListOfMyAnswer[i];
+				// sendAnswer[self.exerciseList[i]['Exercise'].Eid] = self.answer[i];
+				const imageList = exercise.TEanswerPath;
 				if(Array.isArray(imageList) && imageList.length > 0){
 					wx.showLoading({
-						title: `第${Number(i) + 1}道题图片答案上传中`,
+						title: `图片答案上传中`,
 					})
 					const { imageUrlList, failedImageList } = await uploadImageList(imageList, "/my_answer");
 					wx.hideLoading()
@@ -311,26 +320,25 @@ export default class Exercise extends wepy.page {
 						})
 						return;
 					}else{
-						serverImageUrlList[self.exerciseList[i]['Exercise'].Eid] = imageUrlList.join(";");
+						exercise.TEanswerPath = imageUrlList.join(";");
+						// serverImageUrlList[self.exerciseList[i]['Exercise'].Eid] = imageUrlList.join(";");
 					}
 				}
+				changedExerciseList.push(exercise);
 			}
-			console.log(Object.keys(sendAnswer));
-			if(Object.keys(sendAnswer).length === 0){
+			console.log(changedExerciseList);
+			if(changedExerciseList.length === 0){
 				wx.showModal({
 					showCancel: false,
-					content: `作业都已提交`,
+					content: `无未提交作业`,
 				})
 				return;
 			}
 			wepy.request({
-				url: wepy.$instance.globalData.serverUrl + '/app/today/judge_exercise_with_date',
+				url: wepy.$instance.globalData.serverUrl + '/app/today/submit_exercise',
 				method: 'GET',
 				data: {
-					'Sid': self.Sid,
-					'Date': self.Date,
-					'SendAnswer': sendAnswer,
-					'SendAnswerPath': serverImageUrlList,
+					changedExerciseList
 				},
 				success: function(res) {
 					wx.showToast({
@@ -365,10 +373,18 @@ export default class Exercise extends wepy.page {
 		},
 
 		inputChange(e) {
-			console.log("input change", e.detail.value.trim());
-			let self = this;
-			self.answer[self.index] = e.detail.value.trim();
-		}
+			this.onAnswerChange();
+			this.exerciseList[this.index].TEanswerTxt = e.detail.value;
+		},
+
+		onImageListChange(imageList){
+			this.onAnswerChange();
+			this.exerciseList[this.index].TEanswerPath = [...imageList];
+		},
+	};
+
+	onAnswerChange(){
+		this.exerciseList[this.index].changed = true;
 	};
 
 	getTodayExercise() {
@@ -382,28 +398,17 @@ export default class Exercise extends wepy.page {
 			method: 'GET',
 			header: wepy.$instance.setHeader(),
 			success: function(res) {
-				if (res.data.Code !== 2 && res.data.Msg !== 'No exercise!') {
-					self.exerciseList = res.data.Data;
-					self.inputDisabled = new Array(self.exerciseList.length);
+				console.log(res)
+				if (res.data.Code !== 2 && res.data.Msg !== 'No exercise!' && Array.isArray(res.data.Data)) {
+					self.exerciseList = res.data.Data.map((exercise) => {
+						const {EnamePath, EanswerPath, TEanswerPath, Etype} = exercise;
+						exercise.EnamePath = EnamePath !== "" ? EnamePath.split(";").map(x => (Etype === "听写" ? self.audioUrl : self.imageUrl) + "/" + x) : [];
+						exercise.EanswerPath = EanswerPath !== "" ? EanswerPath.split(";").map(x => self.imageOfMyAnswerUrl + "/" + x) : [];
+						exercise.TEanswerPath = TEanswerPath !== "" ? TEanswerPath.split(";").map(x => self.imageOfMyAnswerUrl + "/" + x) : [];
+						return exercise
+					});
 
-					for (let i = 0; i < self.exerciseList.length; i++) {
-						if (self.exerciseList[i]['Exercise'].EnamePath !== '') {
-							let tmpList = self.exerciseList[i]['Exercise'].EnamePath.split(';');
-							self.imageListOfName = tmpList.map(x => self.imageUrl + x);
-						}
-						if (self.exerciseList[i]['Exercise'].EanswerPath !== '') {
-							let tmpList = self.exerciseList[i]['Exercise'].EanswerPath.split(';');
-							self.imageListOfAnswer = tmpList.map(x => self.imageUrl + x);
-						}
-						if (self.exerciseList[i]['Answer'] !== '' || self.exerciseList[i]['AnswerPath'] !== '') {
-							if(self.exerciseList[i]['AnswerPath'] !== ''){
-								self.imageListOfMyAnswer[i] = self.exerciseList[i]['AnswerPath'].split(";").map(x => self.imageOfMyAnswerUrl + "/" + x)
-							}
-							self.inputDisabled[i] = true;
-						} else {
-							self.inputDisabled[i] = false;
-						}
-					}
+					console.log(self.exerciseList)
 					self.$apply();
 				}
 			}
