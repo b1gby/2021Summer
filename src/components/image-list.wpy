@@ -1,14 +1,14 @@
 <template>
 	<block wx:if="{{type === 'add' || imageList.length > 0}}">
-		<view class='cu-bar bg-white margin-top' wx:if="{{type === 'add'}}">
+		<view class='cu-bar bg-white' wx:if="{{type === 'add'}}">
 			<view class='action'>
-				图片上传
+				{{ title }}
 			</view>
 			<view class='action'>
 				{{ imageList.length }}/{{ maxSize }}
 			</view>
 		</view>
-		<view class='{{listWrapperClass}}'>
+		<view class='{{listWrapperClass}}' style='margin: 0 30rpx'>
 			<view bindtap='ViewImage' class='bg-img' wx:for='{{imageList}}'
 				  wx:key='{{index}}'>
 				<image mode='{{mode}}' src='{{imageList[index]}}'></image>
@@ -32,9 +32,13 @@ export default class ImageList extends wepy.component {
 	}
 
 	props = {
+		title:{
+			type: String,
+			default: "图片上传"
+		},
 		maxSize: {
-			type: Number,
-			default: 9
+			type: String,
+			default: "9"
 		},
 		imageList: {
 			type: Array,
@@ -64,7 +68,7 @@ export default class ImageList extends wepy.component {
 			wx.chooseImage({
 				count: this.maxSize, //默认9
 				sizeType: ['original', 'compressed'], //可以指定是原图还是压缩图，默认二者都有
-				sourceType: ['album'], //从相册选择
+				sourceType: ['album', 'camera'], //从相册选择
 				success: (res) => {
 					let tempList;
 					if (Array.isArray(this.imageList) && this.imageList.length !== 0) {
@@ -87,11 +91,5 @@ export default class ImageList extends wepy.component {
 			this.$emit('imageListChange', this.imageList);
 		}
 	};
-	GetImageList = () => {
-		return this.imageList;
-	};
-
-	onLoad() {
-	}
 }
 </script>

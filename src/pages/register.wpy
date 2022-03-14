@@ -12,7 +12,7 @@
             注册
         </view>
         <view class="padding flex-sub text-right">
-            
+
         </view>
     </view>
 
@@ -41,27 +41,14 @@
 		<input name="Sphone" type="number" placeholder="请输入手机号"></input>
 	</view>
 
-    <view class="cu-bar bg-white" style="border-top:1rpx solid #eee;">
-		<view class="action">
-			头像
-		</view>
-		<view class="action">
-			{{imgList.length}}/1
-		</view>
-	</view>
-
-    <view class="cu-form-group">
-        <view class="grid col-4 grid-square flex-sub">
-            <view class="bg-img" wx:for="{{imgList}}" wx:key="{{index}}" bindtap="ViewImage" data-url="{{imgList[index]}}">
-                <image src='{{imgList[index]}}' mode='aspectFill'></image>
-                <view class="cu-tag bg-red" catchtap="DelImg" data-index="{{index}}">
-                    <text class="cuIcon-close"></text>
-                </view>
-            </view>
-            <view class="solids" bindtap="ChooseImage" wx:if="{{imgList.length<1}}">
-                <text class="cuIcon-cameraadd"></text>
-            </view>
-        </view>
+	<view class="bg-white" style='border: 1rpx solid #eee; border-width: 1rpx 0'>
+		<image-list
+			:imageList.sync='imageList'
+			maxSize='1'
+			@imageListChange.user='onImageListChange'
+			type="add"
+			title='头像'
+		></image-list>
 	</view>
 
     <view class="cu-form-group">
@@ -73,11 +60,11 @@
 		</picker>
 	</view>
 
-    <view class="cu-bar bg-white" style="border-top:1rpx solid #eee;">
-		<view class="action">校区</view>
-        <picker bindchange="pickerCampusChange" name="Cid" value="{{campusList[campusIndex].Cid}}" range="{{campusNameList}}">
+	<view class="cu-form-group">
+		<view class="title">校区</view>
+		<picker bindchange="pickerCampusChange" name="Cid" range-key="Cname" value="{{campusIndex}}" range="{{campusList}}">
 			<view class="picker">
-				<text class="text-lg">{{campusIndex?campusList[campusIndex].Cname:campusList[0].Cname}}</text>
+				<text class="text-lg">{{campusList[campusIndex].Cname}}</text>
 			</view>
 		</picker>
 	</view>
@@ -95,85 +82,46 @@
 <script>
 import wepy from 'wepy'
 import WxValidate from "../utils/WxValidate"
+import { gradeRange } from '@/common/constant';
+import ImageList from '@/components/image-list';
+import { uploadImageList } from '@/common/uploadFile';
 export default class Student extends wepy.page{
     data={
-        imgList: [],
-        gradePicker:['七年级','八年级','九年级','高一','高二','高三'],
+        imageList: [],
+        gradePicker: gradeRange,
         gradeIndex:0,
         campusList:[],
-        campusNameList:[],
-        campusIndex:0,
-        nameUploadPath:"",
-        answerUploadPath:"",
-        audioUploadPath:"",
-        recordingTimeqwe:0,//录音计时
-        setInter:"",//录音名称
-        duration:"",
+        campusIndex: "0",
     }
 
+	components = {
+		'image-list': ImageList,
+	};
+
     methods= {
+
+		onImageListChange(imageList){
+			this.imageList = [...imageList];
+		},
+
         pickerGradeChange(e){
-            let self = this
-            self.gradeIndex = e.detail.value
+            this.gradeIndex = e.detail.value
         },
 
         pickerCampusChange(e){
-            let self = this
-            self.campusIndex = e.detail.value
+            this.campusIndex = e.detail.value
         },
 
-        ChooseImage(e) {
-            let self = this
-            let file = e.currentTarget.dataset.file
-            wx.chooseImage({
-                count: 1, //默认9
-                sizeType: ['original', 'compressed'], //可以指定是原图还是压缩图，默认二者都有
-                sourceType: ['album', 'camera'],
-                success: (res) => {
-                    self.imgList= res.tempFilePaths
-                    self.$apply()
-                }
-            });
-        },
+        async formSubmit(e) {
 
-        ViewImage(e) {
-            let self = this
-            let file = e.currentTarget.dataset.file
-            wx.previewImage({
-                urls: self.imgList,
-                current: e.currentTarget.dataset.url
-            });
-        },
-
-        DelImg(e) {
-            let self = this
-            let file = e.currentTarget.dataset.file
-            wx.showModal({
-                title: '删除题目图片',
-                content: '确定要删除这张图片吗？',
-                cancelText: '取消',
-                confirmText: '确定',
-                success: res => {
-                    if (res.confirm) {
-                        self.imgList.splice(e.currentTarget.dataset.index, 1);
-                        self.$apply()
-                    }
-                }
-            })
-        },
-
-        formSubmit(e) {
-            
             let self = this
 
             let successUp = 0; //成功
             let failUp = 0; //失败
             let count = 0; //第几张
-            let length = self.imgList.length; //总数
 
             let sendFormData = e.detail.value // form 表单数据
             if (!self.WxValidate.checkForm(sendFormData)) {
-                
                 //表单元素验证不通过，此处给出相应提示
                 let error = self.WxValidate.errorList[0];
                 wx.showToast({
@@ -184,14 +132,42 @@ export default class Student extends wepy.page{
                             });
                     return false;
             }
+			if(!new RegExp("^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z]{6,16}$").test(sendFormData.Spassword)){
+				wx.showModal({
+					title: "密码格式错误",
+					content: "密码必须为6~16位中文和数字的组合", //提示的内容,
+					showCancel: false,
+				});
+				return false;
+			}
+			if(sendFormData.Spassword !== sendFormData.SpasswordAgain){
+				wx.showToast({
+					title: "两次密码输入不相同", //提示的内容,
+					icon: 'none', //图标,
+					mask: true, //显示透明蒙层，防止触摸穿透,
+				});
+				return false;
+			}
 
-            if(self.imgList.length>0){
-                let lastindex = self.imgList[0].lastIndexOf("/")
-                sendFormData['Sicon'] = self.imgList.length == 0? "" : "user_avatar/" + self.imgList[0].substring(lastindex + 1, self.imgList[0].length)
-            }
-            
+			let length = this.imageList.length; //总数
 
-            console.log(sendFormData)
+			if(length > 0){
+				wx.showLoading({
+					title: `图片答案上传中`,
+				})
+				const { imageUrlList, failedImageList } = await uploadImageList(this.imageList, "/avatar");
+				wx.hideLoading()
+				if(failedImageList.length !== 0){
+					wx.showModal({
+						showCancel: false,
+						content: `头像上传失败，请重试`,
+					})
+					return;
+				}else{
+					sendFormData['Sicon'] = imageUrlList[0];
+				}
+			}
+			sendFormData['Cid'] = Number(this.campusList[sendFormData['Cid']]['Cid']);
             wepy.request({
                 url:wepy.$instance.globalData.serverUrl + '/app/login/register_student',
                 method:'POST',
@@ -201,78 +177,65 @@ export default class Student extends wepy.page{
                     console.log(res)
                     if (res.data.Code == 1){
                         wx.showToast({
-                              title: '添加成功', //提示的内容,
+                              title: '注册成功', //提示的内容,
                               icon: 'success', //图标,
                               mask: true, //显示透明蒙层，防止触摸穿透,
-                              success: res => {}
                             });
-
-                        //添加头像
-                        if(length>0){
-                            self.recursionImgUpload(self,self.imgList, successUp, failUp, count, length)
-                        }
 
                         setTimeout(function(){
                             wepy.navigateBack({
                                 delta: 1
                             })
                         }, 1000)
-                        
-                        
                     } else if(res.data.Code == 2){
-                        if(res.data.Msg == "Password not consistent!"){
-                            wx.showToast({
-                              title: '两次密码不一致', //提示的内容,
-                              icon: 'error', //图标,
-                              mask: true, //显示透明蒙层，防止触摸穿透,
-                              success: res => {}
-                            });
-                        } else if(res.data.Msg == "Username existed!"){
-                            wx.showToast({
-                              title: '用户名已存在', //提示的内容,
-                              icon: 'error', //图标,
-                              mask: true, //显示透明蒙层，防止触摸穿透,
-                              success: res => {}
-                            });
-                        }
+						wx.showModal({
+							title: '注册失败',
+							content: res.data.Msg,
+							showCancel: false,
+						})
                     }
                 }
             })
-            
         },
-
-        
     }
 
     initValidate() {
         let rules = {
             Sname: {
                 required: true,
-                maxlength: 10
+                maxlength: 16,
             },
             Snickname: {
                 required: true,
-                maxlength: 10
+                maxlength: 16,
             },
             Sphone: {
                 required: true,
                 tel: true
-            }
+            },
+			Spassword:{
+				required: true,
+				maxlength: 16,
+			}
         }
 
         let message = {
-            Sname: {
-                required: '请输入您的用户名',
-                maxlength: '用户名不能超过10个字'
-            },
+			Sname: {
+				required: '请输入您的用户名',
+				maxlength: '用户名不能超过16个字'
+			},
             Snickname: {
                 required: '请输入您的昵称',
-                maxlength: '昵称不能超过10个字'
+                maxlength: '昵称不能超过16个字'
             },
             Sphone: {
                 required: '请输入您的手机号',
-                maxlength: '请输入正确的手机号'
-            }
+                tel: '请输入正确的手机号'
+            },
+			Spassword:{
+				required: '请输入密码',
+				maxlength: '密码不能超过16个字符'
+			}
         }
         //实例化当前的验证规则和提示消息
         this.WxValidate = new WxValidate(rules, message);
@@ -280,19 +243,15 @@ export default class Student extends wepy.page{
 
     getCampusData() {
         let self = this
-        
+
         wepy.request({
                 url:wepy.$instance.globalData.serverUrl + '/app/login/get_campus_list',
                 method:'GET',
                 header: wepy.$instance.setHeader(),
-                
+
                 success: function(res) {
-                    console.log(res)
                     if (res.data.Code == 1){
                         self.campusList = res.data.Data
-                        for (let i = 0;i<res.data.Data.length;i++){
-                            self.campusNameList.push(res.data.Data[i].Cname)
-                        }
                         self.$apply()
                     }
                 }
@@ -322,7 +281,7 @@ export default class Student extends wepy.page{
                 failUp++;//失败+1
             },
             complete(e){
-                
+
                 count++;
                 if(count == length) {
                     console.log("上传成功")
@@ -331,7 +290,7 @@ export default class Student extends wepy.page{
                 }
             }
         });
-        
+
     }
 
     onLoad() {

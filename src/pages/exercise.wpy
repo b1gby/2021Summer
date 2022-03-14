@@ -54,7 +54,6 @@ page {
 				<block wx:if="{{exerciseList[index].Etype!=='听写'}}">
 					<name-image-list
 						:imageList.sync='currentImageListOfName'
-						title='{{9}}'
 						type='show'
 					>
 					</name-image-list>
@@ -84,7 +83,6 @@ page {
 			/>
 			<image-list
 				:imageList.sync='currentImageListOfMyAnswer'
-				title='{{9}}'
 				@imageListChange.user='onImageListChange'
 				:type.sync="imageListType"
 			></image-list>
@@ -101,7 +99,6 @@ page {
 			<block wx:if="{{currentImageListOfAnswer.length > 0}}">
 				<answer-image-list
 					:imageList.sync='currentImageListOfAnswer'
-					title='{{9}}'
 					type='show'
 				>
 				</answer-image-list>

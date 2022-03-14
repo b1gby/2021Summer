@@ -19,6 +19,7 @@
   "dependencies": {
     "@miniprogram-component-plus/tabs": "^1.0.0",
     "@wepy/core": "^2.1.0",
+    "async-validate": "^1.0.1",
     "axios": "^0.26.1",
     "moment": "^2.29.1",
     "wepy": "^1.6.0",

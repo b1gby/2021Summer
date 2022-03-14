@@ -91,7 +91,7 @@ export default class extends wepy.app {
   onCheckSessionTimeout() {
     let self = this
     console.log("checking session")
-    const SESSION_TIMEOUT = 3 * 60 * 60 * 1000 //登陆状态有效时间为3小时
+    const SESSION_TIMEOUT = 24 * 60 * 60 * 1000 //登陆状态有效时间为24小时
     let sessionToken = wepy.getStorageSync("sessionToken")
     let sessionTime = wepy.getStorageSync("sessionDate")
 
