@@ -21,8 +21,6 @@ page {
 
 <template>
 	<view class='flex bg-white align-center padding'>
-		<view class='padding flex-sub'>
-		</view>
 		<view class='padding flex-sub text-center text-black text-lg text-bold' wx:if="{{isToday}}">
 			今日习题
 		</view>
@@ -198,7 +196,7 @@ export default class Exercise extends wepy.page {
 			return this.exerciseList[this.index] && this.exerciseList[this.index].TEstatus > 1;
 		},
 		hasComment(){
-			return this.exerciseList[this.index] && this.exerciseList[this.index].TEcomment.length > 0;
+			return this.exerciseList[this.index] && this.exerciseList[this.index].TEcomment && this.exerciseList[this.index].TEcomment.length > 0;
 		},
 		imageListType (){
 			return this.exerciseList[this.index] && this.exerciseList[this.index].TEstatus > 1 ? "show" : "add";
@@ -398,7 +396,6 @@ export default class Exercise extends wepy.page {
 			method: 'GET',
 			header: wepy.$instance.setHeader(),
 			success: function(res) {
-				console.log(res)
 				if (res.data.Code !== 2 && res.data.Msg !== 'No exercise!' && Array.isArray(res.data.Data)) {
 					self.exerciseList = res.data.Data.map((exercise) => {
 						const {EnamePath, EanswerPath, TEanswerPath, Etype} = exercise;
@@ -407,8 +404,7 @@ export default class Exercise extends wepy.page {
 						exercise.TEanswerPath = TEanswerPath !== "" ? TEanswerPath.split(";").map(x => self.imageOfMyAnswerUrl + "/" + x) : [];
 						return exercise
 					});
-
-					console.log(self.exerciseList)
+					console.log(res)
 					self.$apply();
 				}
 			}
