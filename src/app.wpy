@@ -1,133 +1,165 @@
-<style lang="less">
+<style lang='less'>
 @import './style/weui.less';
 @import "colorui/main.wxss";
 @import "colorui/icon.wxss";
 
 .container {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  box-sizing: border-box;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: space-between;
+	box-sizing: border-box;
 }
-.margin-left-auto{
-  margin-left: auto;
+
+.margin-left-auto {
+	margin-left: auto;
 }
 </style>
 
 <script>
-import wepy from 'wepy'
-import 'wepy-async-function'
+import wepy from 'wepy';
+import 'wepy-async-function';
 
 export default class extends wepy.app {
 
-  config = {
-    pages: [
-      'pages/index',
-      'pages/login',
-      'pages/my',
-      'pages/edit-password',
-      'pages/exercise',
-      'pages/exercise-history',
-      'pages/register',
-      'pages/wrongproblem',
-      'pages/wrongproblem-detail',
-      'pages/create-wrongproblem',
-      'pages/edit-wrongproblem',
-      'pages/create-orderTeacher',
-      'pages/learnsituation',
-    ],
-    window: {
-      backgroundTextStyle: 'light',
-      navigationBarBackgroundColor: '#fff',
-      navigationBarTitleText: 'WeChat',
-      navigationBarTextStyle: 'black'
-    },
-    // "style" : "v2",
-    "tabBar" : {
-      "list": [
-        {
-            "pagePath": "pages/index",
-            "iconPath": "images/homepage.png",
-            "selectedIconPath": "images/homepagefill.png",
-            "text": "主页"
-        },
-        {
-            "pagePath": "pages/my",
-            "iconPath": "images/my.png",
-            "selectedIconPath": "images/myfill.png",
-            "text": "我的"
-        }
-      ]
-    },
-    useExtendedLib: {
-      weui: true
-    },
-    usingComponents:{
-      "cu-custom": "/colorui/components/cu-custom",
-    },
-  }
+	config = {
+		pages: [
+			'pages/index',
+			'pages/login',
+			'pages/my',
+			'pages/edit-password',
+			'pages/exercise',
+			'pages/exercise-history',
+			'pages/register',
+			'pages/wrongproblem',
+			'pages/wrongproblem-detail',
+			'pages/create-wrongproblem',
+			'pages/edit-wrongproblem',
+			'pages/create-orderTeacher',
+			'pages/learnsituation'
+		],
+		window: {
+			backgroundTextStyle: 'light',
+			navigationBarBackgroundColor: '#fff',
+			navigationBarTitleText: 'WeChat',
+			navigationBarTextStyle: 'black'
+		},
+		// "style" : "v2",
+		'tabBar': {
+			'list': [
+				{
+					'pagePath': 'pages/index',
+					'iconPath': 'images/homepage.png',
+					'selectedIconPath': 'images/homepagefill.png',
+					'text': '主页'
+				},
+				{
+					'pagePath': 'pages/my',
+					'iconPath': 'images/my.png',
+					'selectedIconPath': 'images/myfill.png',
+					'text': '我的'
+				}
+			]
+		},
+		useExtendedLib: {
+			weui: true
+		},
+		usingComponents: {
+			'cu-custom': '/colorui/components/cu-custom'
+		}
+	};
 
-  globalData = {
-    userInfo: null,
-    serverUrl: "https://www.kaigestudy.top:8080",
-  }
+	globalData = {
+		userInfo: null,
+		serverUrl: 'https://www.kaigestudy.top:8080'
+	};
 
-  onLaunch() {
-    let self = this
-    //检查sessionid是否过期
-    self.onCheckSessionTimeout()
+	onLaunch() {
+		let self = this;
+		//检查sessionid是否过期
+		self.onCheckSessionTimeout();
 
-    if(wepy.getStorageSync("sessionUserInfo")){
-      this.globalData.userInfo = wepy.getStorageSync("sessionUserInfo")
-    }else{
-      this.globalData.userInfo = null
-    }
+		if (wepy.getStorageSync('sessionUserInfo')) {
+			this.globalData.userInfo = wepy.getStorageSync('sessionUserInfo');
+		} else {
+			this.globalData.userInfo = null;
+		}
 
-  }
+	}
 
-  //检查sessionid是否过期的方法
-  onCheckSessionTimeout() {
-    let self = this
-    console.log("checking session")
-    const SESSION_TIMEOUT = 24 * 60 * 60 * 1000 //登陆状态有效时间为24小时
-    let sessionToken = wepy.getStorageSync("sessionToken")
-    let sessionTime = wepy.getStorageSync("sessionDate")
+	//检查sessionid是否过期的方法
+	onCheckSessionTimeout() {
+		let self = this;
+		console.log('checking session');
+		const SESSION_TIMEOUT = 24 * 60 * 60 * 1000; //登陆状态有效时间为24小时
+		let sessionToken = wepy.getStorageSync('sessionToken');
+		let sessionTime = wepy.getStorageSync('sessionDate');
 
-    if (sessionToken == null || sessionToken == undefined || sessionToken == ""||sessionTime == null || sessionTime == undefined || sessionTime == "") {
-      console.log("session is empty")
-      return
-    }
+		if (sessionToken == null || sessionToken == undefined || sessionToken == '' || sessionTime == null || sessionTime == undefined || sessionTime == '') {
+			console.log('session is empty');
+			return;
+		}
 
-    let aftertimestamp = Date.parse(new Date())
-    if (aftertimestamp - sessionTime >= SESSION_TIMEOUT) {
-      // 过期后清除session缓存
-      wepy.removeStorageSync("sessionToken")
-      wepy.removeStorageSync("sessionDate")
-      wepy.removeStorageSync("sessionUserInfo")
-      console.log("remove session!")
-    }
-  }
+		let aftertimestamp = Date.parse(new Date());
+		if (aftertimestamp - sessionTime >= SESSION_TIMEOUT) {
+			// 过期后清除session缓存
+			wepy.removeStorageSync('sessionToken');
+			wepy.removeStorageSync('sessionDate');
+			wepy.removeStorageSync('sessionUserInfo');
+			console.log('remove session!');
+		}
+	}
 
-  sleep (s) {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        resolve('promise resolved')
-      }, s * 1000)
-    })
-  }
+	sleep(s) {
+		return new Promise((resolve, reject) => {
+			setTimeout(() => {
+				resolve('promise resolved');
+			}, s * 1000);
+		});
+	}
 
 
-  // 设置带有cookie的request header，每次request都带这个header
-  setHeader() {
-    let self = this
-    let header = {
-      'Content-type': 'application/json; charset=utf-8',
-      'TTToken': wepy.getStorageSync("sessionToken") //读取本地保存好的上一次cookie
-    };
-    return header
-  }
+	// 设置带有cookie的request header，每次request都带这个header
+	setHeader() {
+		let self = this;
+		let header = {
+			'Content-type': 'application/json; charset=utf-8',
+			'TTToken': wepy.getStorageSync('sessionToken') //读取本地保存好的上一次cookie
+		};
+		return header;
+	}
 
+	req(type, url, data) {
+		const header = { // 根据需求设置请求头Authorization
+			'content-type': 'application/json',
+			'TTToken': wepy.getStorageSync('sessionToken')
+		};
+		wx.showNavigationBarLoading();
+		return new Promise((resolve, reject) => { // 返回一个Promise
+			wx.request({
+				url: this.globalData.serverUrl + url, // 请求地址
+				data: data, // 请求参数
+				header: header,
+				method: type,
+				success: function(res) {
+					console.log(res);
+					resolve(res);
+				},
+				fail: function(err) {
+					reject(err);
+				},
+				timeout: 10000
+			});
+		});
+	}
+
+	post(url, data) {
+		return this.req('POST', url, data);
+	}
+
+	get(url, data) {
+		return this.req('GET', url, data);
+	}
 }
 </script>

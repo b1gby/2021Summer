@@ -130,7 +130,8 @@ page {
 
 		<view class='flex padding'>
 			<view class='flex-sub margin'></view>
-			<button class='flex-twice margin cu-btn bg-pink shadow-blur round' @tap='clickAskQuestion()'>提问老师</button>
+<!--			<button class='flex-twice margin cu-btn bg-pink shadow-blur round' @tap='clickAskQuestion()'>提问老师</button>-->
+			<button class="flex-twice padding cu-btn bg-pink shadow-blur round" open-type="contact" bindcontact="handleContact" session-from="{{sessionFrom}}">提问老师</button>
 			<view class='flex-sub margin'></view>
 		</view>
 	</view>
@@ -197,6 +198,13 @@ export default class Exercise extends wepy.page {
 		currentImageListOfAnswer(){
 			let imageList = this.exerciseList[this.index] ? this.exerciseList[this.index].EanswerPath : undefined;
 			return typeof imageList === 'undefined' ? [] : imageList;
+		},
+		sessionFrom(){
+			let exercise = this.exerciseList[this.index];
+			if(exercise){
+				const {TEid} = exercise
+				return "exercise/"+TEid
+			}
 		}
 	}
 

@@ -43,7 +43,8 @@
 
         <view class="flex padding">
           <view class="flex-sub"></view>
-          <button class="flex-twice padding cu-btn bg-pink shadow-blur round" @tap="clickAskQuestion()">我要提问</button>
+<!--          <button class="flex-twice padding cu-btn bg-pink shadow-blur round" @tap="clickAskQuestion()">我要提问</button>-->
+			<button class="flex-twice padding cu-btn bg-pink shadow-blur round" open-type="contact" bindcontact="handleContact" session-from="index">我要提问</button>
           <view class="flex-sub"></view>
         </view>
       </view>
@@ -85,6 +86,10 @@
         let self = this
         this.$navigate({url:e.currentTarget.dataset.url + "?sid=" + self.userInfo.Sid})
       },
+
+		handleContact(e){
+		  console.log(e);
+		},
 
       onClickLogin() {
         let self = this
