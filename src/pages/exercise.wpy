@@ -82,6 +82,7 @@ page {
 				   wx:elif="{{!hasAnswer}}"
 			/>
 			<image-list
+				wx:if = "{{allowImageAnswer}}"
 				:imageList.sync='currentImageListOfMyAnswer'
 				@imageListChange.user='onImageListChange'
 				:type.sync="imageListType"
@@ -130,7 +131,6 @@ page {
 
 		<view class='flex padding'>
 			<view class='flex-sub margin'></view>
-<!--			<button class='flex-twice margin cu-btn bg-pink shadow-blur round' @tap='clickAskQuestion()'>提问老师</button>-->
 			<button class="flex-twice padding cu-btn bg-pink shadow-blur round" open-type="contact" bindcontact="handleContact" session-from="{{sessionFrom}}">提问老师</button>
 			<view class='flex-sub margin'></view>
 		</view>
@@ -139,10 +139,6 @@ page {
 	<view class='margin padding' wx:else>
 		<view class='flex justify-center text-bold text-lg'>今日没有题目</view>
 	</view>
-
-	<mp-dialog bindbuttontap='tapDialogButton' buttons='{{oneButton}}' show='{{showOneButtonDialog}}' title='作答'>
-		<view>今日题目已完成</view>
-	</mp-dialog>
 </template>
 
 <script>
@@ -152,6 +148,12 @@ import { uploadImageList } from '@/common/uploadFile';
 import moment from 'moment';
 import { AUDIO_URL, IMAGE_OF_MY_ANSWER_URL, IMAGE_URL } from '@/common/url';
 
+const initialStatus = {
+	hasAnswer: false,
+	hasComment: false,
+	sessionFrom: "",
+	allowImageAnswer: false,
+}
 export default class Exercise extends wepy.page {
 	config = {
 		usingComponents: {
@@ -173,20 +175,35 @@ export default class Exercise extends wepy.page {
 		isToday: true,
 		exerciseList: [],
 		index: 0,
-		showOneButtonDialog: false,
-		oneButton: [{ text: '确定' }],
+		hasAnswer: false,
+		hasComment: false,
+		sessionFrom: "",
+		allowImageAnswer: false,
 	};
 
+	watch = {
+		index(){
+			this.computeStatus()
+		},
+		exerciseList(){
+			this.computeStatus()
+		}
+	}
+
+	computeStatus(){
+		console.log("compute status", this.exerciseList[this.index])
+		if(!this.exerciseList[this.index]){
+			Object.assign(this, initialStatus);
+		}else{
+			const {TEstatus, TEcomment, TEid, EautoCorrect} = this.exerciseList[this.index];
+			this.hasAnswer = TEstatus > 1;
+			this.hasComment = TEcomment;
+			this.sessionFrom = "exercise/" + TEid;
+			this.allowImageAnswer = !EautoCorrect;
+		}
+	}
+
 	computed = {
-		hasAnswer () {
-			return this.exerciseList[this.index] && this.exerciseList[this.index].TEstatus > 1;
-		},
-		hasComment(){
-			return this.exerciseList[this.index] && this.exerciseList[this.index].TEcomment && this.exerciseList[this.index].TEcomment.length > 0;
-		},
-		imageListType (){
-			return this.exerciseList[this.index] && this.exerciseList[this.index].TEstatus > 1 ? "show" : "add";
-		},
 		currentImageListOfMyAnswer(){
 			let imageList = this.exerciseList[this.index] ? this.exerciseList[this.index].TEanswerPath : undefined;
 			return typeof imageList === 'undefined' ? [] : imageList;
@@ -199,17 +216,12 @@ export default class Exercise extends wepy.page {
 			let imageList = this.exerciseList[this.index] ? this.exerciseList[this.index].EanswerPath : undefined;
 			return typeof imageList === 'undefined' ? [] : imageList;
 		},
-		sessionFrom(){
-			let exercise = this.exerciseList[this.index];
-			if(exercise){
-				const {TEid} = exercise
-				return "exercise/"+TEid
-			}
+		imageListType(){
+			return this.exerciseList[this.index] ? (this.exerciseList[this.index].TEstatus > 1 ? "show" : "add") : "add";
 		}
 	}
 
 	methods = {
-
 		clickLast() {
 			let self = this;
 			if (self.index !== 0) {
@@ -243,7 +255,6 @@ export default class Exercise extends wepy.page {
 		},
 
 		async clickSubmit() {
-			console.log(this.exerciseList);
 			let self = this;
 			let incompleteExerciseKey = -1;
 			// 检查题目是否全部完成
@@ -324,28 +335,6 @@ export default class Exercise extends wepy.page {
 			});
 		},
 
-		clickAskQuestion() {
-			let self = this;
-
-			wepy.request({
-				url: wepy.$instance.globalData.serverUrl + '/app/student/insert_ask_question',
-				method: 'POST',
-				data: {
-					'Sid': Number(self.Sid),
-					'Eid': Number(self.exerciseList[self.index]['Exercise'].Eid)
-				},
-				success: function(res) {
-					wx.showToast({
-						title: '提问成功'
-					});
-				}
-			});
-		},
-
-		tapDialogButton(e) {
-			let self = this;
-			self.showOneButtonDialog = false;
-		},
 
 		inputChange(e) {
 			this.onAnswerChange();
