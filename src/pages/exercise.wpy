@@ -71,16 +71,27 @@ page {
 			<view class='text-xl text-black text-bold'>
 				作答
 			</view>
-			<view class='text-lg' wx:if="{{hasAnswer && exerciseList[index].TEanswerTxt !== ''}}">
-				{{ exerciseList[index].TEanswerTxt }}
+			<view class='margin text-lg' wx:if="{{hasAnswer && exerciseList[index].TEanswerTxt !== ''}}">
+				{{ selectionAnswerIndex === null ? exerciseList[index].TEanswerTxt: selectionAnswerPicker[selectionAnswerIndex] }}
 			</view>
-			<input class='input text-lg margin' disabled='{{hasAnswer}}'
-				   placeholder='请将答案填写在此处'
-				   type='text'
-				   value="{{exerciseList[index].TEanswerTxt}}"
-				   @input='inputChange'
-				   wx:elif="{{!hasAnswer}}"
-			/>
+			<block wx:elif="{{!hasAnswer}}">
+				<input class='input text-lg margin' disabled='{{hasAnswer}}'
+					   placeholder='请将答案填写在此处'
+					   type='text'
+					   value="{{exerciseList[index].TEanswerTxt}}"
+					   @input='inputChange'
+					   wx:if="{{!isSelectionType}}"
+				/>
+				<view class='cu-form-group' wx:else>
+					<view class='title'>你的选项</view>
+					<picker bindchange='inputChange' range='{{selectionAnswerPicker}}'
+							value='{{selectionAnswerIndex}}'>
+						<view class='picker'>
+							<text class='text-lg'>{{ selectionAnswerIndex === null ? "请选择正确选项" : selectionAnswerPicker[selectionAnswerIndex] }}</text>
+						</view>
+					</picker>
+				</view>
+			</block>
 			<image-list
 				wx:if = "{{allowImageAnswer}}"
 				:imageList.sync='currentImageListOfMyAnswer'
@@ -95,7 +106,7 @@ page {
 				正确答案
 			</view>
 			<view class='margin text-lg'>
-				{{ exerciseList[index].EanswerTxt }}
+				{{ selectionAnswerIndex === null ? exerciseList[index].EanswerTxt: selectionAnswerPicker[exerciseList[index].EanswerTxt] }}
 			</view>
 			<block wx:if="{{currentImageListOfAnswer.length > 0}}">
 				<answer-image-list
@@ -147,13 +158,21 @@ import ImageList from '@/components/image-list';
 import { uploadImageList } from '@/common/uploadFile';
 import moment from 'moment';
 import { AUDIO_URL, IMAGE_OF_MY_ANSWER_URL, IMAGE_URL } from '@/common/url';
+import { selectionAnswerRange, selectionConfigRange } from '@/common/constant';
 
-const initialStatus = {
+const initialProps = {
 	hasAnswer: false,
 	hasComment: false,
 	sessionFrom: "",
 	allowImageAnswer: false,
 }
+
+const selectionProps = {
+	isSelectionType: false,
+	selectionAnswerIndex: null,
+	selectionAnswerPicker: [],
+}
+
 export default class Exercise extends wepy.page {
 	config = {
 		usingComponents: {
@@ -175,10 +194,8 @@ export default class Exercise extends wepy.page {
 		isToday: true,
 		exerciseList: [],
 		index: 0,
-		hasAnswer: false,
-		hasComment: false,
-		sessionFrom: "",
-		allowImageAnswer: false,
+		...initialProps,
+		...selectionProps,
 	};
 
 	watch = {
@@ -191,16 +208,31 @@ export default class Exercise extends wepy.page {
 	}
 
 	computeStatus(){
-		console.log("compute status", this.exerciseList[this.index])
 		if(!this.exerciseList[this.index]){
-			Object.assign(this, initialStatus);
+			Object.assign(this, initialProps);
+			Object.assign(this, selectionProps);
 		}else{
-			const {TEstatus, TEcomment, TEid, EautoCorrect} = this.exerciseList[this.index];
+			const {TEstatus, TEcomment, TEid, EautoCorrect, EtypeDetail, TEanswerTxt} = this.exerciseList[this.index];
 			this.hasAnswer = TEstatus > 1;
 			this.hasComment = TEcomment;
 			this.sessionFrom = "exercise/" + TEid;
-			this.allowImageAnswer = !EautoCorrect;
+			this.allowImageAnswer = EautoCorrect === 1;
+			if(EtypeDetail){
+				let detail = JSON.parse(EtypeDetail);
+				if(Array.isArray(detail) && detail.length >= 2){
+					this.isSelectionType = true;
+					this.selectionAnswerPicker = selectionAnswerRange[EtypeDetail[1]].slice(0, selectionConfigRange[0][EtypeDetail[0]]);
+					if(!TEanswerTxt){
+						this.selectionAnswerIndex = null;
+					}else{
+						this.selectionAnswerIndex = TEanswerTxt;
+					}
+				}
+			}else{
+				Object.assign(this, selectionProps);
+			}
 		}
+		this.$apply();
 	}
 
 	computed = {

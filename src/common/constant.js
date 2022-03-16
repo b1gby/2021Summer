@@ -15,3 +15,15 @@ export const typeRange = {
 };
 
 export const difficultRange = ['简单', '中等', '困难', '竞赛'];
+
+export const autoCorrectRange = [{
+  value: 1,
+  label: "自动"
+},{
+  value: 2,
+  label: "手动"
+}];
+
+export const selectionConfigRange = [[2,3,4],["A", "a", "1", "i"]]
+
+export const selectionAnswerRange = [['A', 'B', 'C', 'D'], ['a', 'b', 'c', 'd'], ['1', '2', '3', '4'], ['i', 'ii', 'iii', 'iiii']];
