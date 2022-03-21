@@ -122,12 +122,10 @@ export default class extends wepy.app {
 
 	// 设置带有cookie的request header，每次request都带这个header
 	setHeader() {
-		let self = this;
-		let header = {
+		return {
 			'Content-type': 'application/json; charset=utf-8',
 			'TTToken': wepy.getStorageSync('sessionToken') //读取本地保存好的上一次cookie
 		};
-		return header;
 	}
 
 	req(type, url, data) {
@@ -148,6 +146,9 @@ export default class extends wepy.app {
 				},
 				fail: function(err) {
 					reject(err);
+				},
+				complete: function(){
+					wx.hideNavigationBarLoading();
 				},
 				timeout: 10000
 			});
