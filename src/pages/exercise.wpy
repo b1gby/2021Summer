@@ -142,7 +142,8 @@ page {
 
 		<view class='flex padding'>
 			<view class='flex-sub margin'></view>
-			<button class="flex-twice padding cu-btn bg-pink shadow-blur round" open-type="contact" bindcontact="handleContact" session-from="{{sessionFrom}}">提问老师</button>
+			<button class='flex-twice margin cu-btn bg-pink shadow-blur round' @tap='clickAskQuestion'>提问老师</button>
+<!--			<button class="flex-twice padding cu-btn bg-pink shadow-blur round" open-type="contact" bindcontact="handleContact" session-from="{{sessionFrom}}">提问老师</button>-->
 			<view class='flex-sub margin'></view>
 		</view>
 	</view>
@@ -159,6 +160,7 @@ import { uploadImageList } from '@/common/uploadFile';
 import moment from 'moment';
 import { AUDIO_URL, IMAGE_OF_MY_ANSWER_URL, IMAGE_URL } from '@/common/url';
 import { selectionAnswerRange, selectionConfigRange } from '@/common/constant';
+import { IMAGE_OF_EXERCISE_URL } from '../common/url';
 
 const initialProps = {
 	hasAnswer: false,
@@ -377,6 +379,24 @@ export default class Exercise extends wepy.page {
 			this.onAnswerChange();
 			this.exerciseList[this.index].TEanswerPath = [...imageList];
 		},
+		clickAskQuestion() {
+			let self = this;
+
+			wepy.request({
+				url: wepy.$instance.globalData.serverUrl + '/app/student/insert_ask_question',
+				method: 'POST',
+				data: {
+					'Sid': Number(self.Sid),
+					'Eid': Number(self.exerciseList[self.index].Eid)
+				},
+				success: function(res) {
+					wx.showToast({
+						title: '提问成功'
+					});
+				}
+			});
+		},
+
 	};
 
 	onAnswerChange(){
@@ -398,9 +418,9 @@ export default class Exercise extends wepy.page {
 					self.exerciseList = res.data.Data.map((exercise) => {
 						const {EnamePath, EanswerPath, TEanswerPath, Etype} = exercise;
 						exercise.EnamePath = EnamePath !== "" ? EnamePath.split(";").
-							map(x => (Etype === "听写" ? AUDIO_URL : IMAGE_URL) + x)
+							map(x => (Etype === "听写" ? AUDIO_URL : IMAGE_OF_EXERCISE_URL) + x)
 							: [];
-						exercise.EanswerPath = EanswerPath !== "" ? EanswerPath.split(";").map(x => IMAGE_URL + x) : [];
+						exercise.EanswerPath = EanswerPath !== "" ? EanswerPath.split(";").map(x => IMAGE_OF_EXERCISE_URL + x) : [];
 						exercise.TEanswerPath = TEanswerPath !== "" ? TEanswerPath.split(";").map(x => IMAGE_OF_MY_ANSWER_URL + x) : [];
 						return exercise
 					});
