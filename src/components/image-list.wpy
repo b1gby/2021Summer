@@ -1,6 +1,7 @@
 <template>
 	<block wx:if="{{type === 'add' || imageList.length > 0}}">
-		<view class='cu-bar bg-white' wx:if="{{type === 'add'}}">
+	<!--当type为show，且并没有足够的image进行展示时，隐藏该组件-->
+		<view class='cu-bar bg-white'>
 			<view class='action'>
 				{{ title }}
 			</view>
@@ -48,14 +49,30 @@ export default class ImageList extends wepy.component {
 			type:String,
 			default: "add"
 		},
+		addColumns:{
+			type: String,
+			default: '4',
+		},
+		showColumns:{
+			type: String,
+			default: undefined,
+		},
+		showTitle:{
+			type: Boolean,
+			default: false,
+		}
 	};
 
 	computed = {
 		listWrapperClass(){
 			if(this.type === "add"){
-				return "grid col-4 grid-square flex-sub";
+				return `grid col-${this.addColumns} grid-square flex-sub`;
 			}else{
-				return "grid col-1";
+				if(this.showColumns){
+					return `grid col-${this.showColumns} grid-square flex-sub`
+				}else{
+					return `grid col-1`;
+				}
 			}
 		},
 		mode(){

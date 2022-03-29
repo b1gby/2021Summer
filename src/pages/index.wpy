@@ -34,17 +34,11 @@
                     <view>我的错题</view>
                 </view>
             </view>
-            <!-- <view class="cu-item arrow" data-url="create-orderTeacher" @tap="onClick">
-                <view class="content">
-                    <view>预约家教</view>
-                </view>
-            </view> -->
         </view>
 
         <view class="flex padding">
           <view class="flex-sub"></view>
-<!--          <button class="flex-twice padding cu-btn bg-pink shadow-blur round" @tap="clickAskQuestion()">我要提问</button>-->
-			<button class="flex-twice padding cu-btn bg-pink shadow-blur round" open-type="contact" bindcontact="handleContact" session-from="index">我要提问</button>
+          <button class="flex-twice padding cu-btn bg-pink shadow-blur round" @tap="clickAskQuestion">我要提问</button>
           <view class="flex-sub"></view>
         </view>
       </view>
@@ -114,28 +108,12 @@
       },
 
       clickAskQuestion(){
-            let self = this
-
-            wepy.request({
-                url:wepy.$instance.globalData.serverUrl + '/app/student/insert_ask_question',
-                method: 'POST',
-                data:{
-                    "Sid": Number(self.userInfo.Sid),
-                    "Eid": Number(-1),
-                },
-                success:function(res) {
-                  wepy.showToast({
-                    title: '提问成功，请耐心等待老师回复!', //提示的内容,
-                    icon: 'none', //图标,
-                    duration: 2000, //延迟时间,
-                    mask: true, //显示透明蒙层，防止触摸穿透,
-                    success: res => {}
-                  });
-
-                },
-            })
+		  wx.openCustomerServiceChat({
+			  extInfo: {url: 'https://work.weixin.qq.com/kfid/kfc48375989369e9d71'},
+			  corpId: 'wwac8eebae8391f2ad',
+			  success(res) {}
+		  })
         },
-
     }
 
 

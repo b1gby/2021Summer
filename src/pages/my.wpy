@@ -48,12 +48,12 @@
         </view>
 	</view>
 
-    <view class="cu-form-group">
+<!--    <view class="cu-form-group">
 		<view class="title">手机号码</view>
 		<view wx:if="{{!isClickEdit}}">{{copyStudent.Sphone}}</view>
 		<input wx:else name="Sphone" type="number" value="{{copyStudent.Sphone}}"  disabled="{{!isClickEdit}}"></input>
         <button class="cu-btn bg-green shadow" wx:if="{{isClickEdit}}">获取验证码</button>
-	</view>
+	</view>-->
 
     <view class="cu-form-group" wx:if="{{isClickEdit}}">
 		<view class="title">验证码</view>

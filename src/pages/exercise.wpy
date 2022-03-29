@@ -71,11 +71,11 @@ page {
 			<view class='text-xl text-black text-bold'>
 				作答
 			</view>
-			<view class='margin text-lg' wx:if="{{hasAnswer && exerciseList[index].TEanswerTxt !== ''}}">
+<!--			<view class='margin text-lg' wx:if="{{hasAnswer && exerciseList[index].TEanswerTxt !== ''}}">
 				{{ selectionAnswerIndex === null ? exerciseList[index].TEanswerTxt: selectionAnswerPicker[selectionAnswerIndex] }}
-			</view>
-			<block wx:elif="{{!hasAnswer}}">
-				<input class='input text-lg margin' disabled='{{hasAnswer}}'
+			</view>-->
+			<block>
+				<input class='input text-lg margin'
 					   placeholder='请将答案填写在此处'
 					   type='text'
 					   value="{{exerciseList[index].TEanswerTxt}}"
@@ -162,6 +162,7 @@ import { AUDIO_URL, IMAGE_OF_MY_ANSWER_URL, IMAGE_URL } from '@/common/url';
 import { selectionAnswerRange, selectionConfigRange } from '@/common/constant';
 import { IMAGE_OF_EXERCISE_URL } from '../common/url';
 import { getSelectionText } from '../common/param-conversion';
+import { AUTO_CORRECT } from '../common/constant';
 
 const initialProps = {
 	hasAnswer: false,
@@ -219,7 +220,7 @@ export default class Exercise extends wepy.page {
 			this.hasAnswer = TEstatus > 1;
 			this.hasComment = TEcomment;
 			this.sessionFrom = "exercise/" + TEid;
-			this.allowImageAnswer = EautoCorrect === 1;
+			this.allowImageAnswer = EautoCorrect === AUTO_CORRECT.MANUAL;
 			if(EtypeDetail){
 				let detail = JSON.parse(EtypeDetail);
 				if(Array.isArray(detail) && detail.length >= 2){
@@ -253,7 +254,8 @@ export default class Exercise extends wepy.page {
 			return typeof imageList === 'undefined' ? [] : imageList;
 		},
 		imageListType(){
-			return this.exerciseList[this.index] ? (this.exerciseList[this.index].TEstatus > 1 ? "show" : "add") : "add";
+			// return this.exerciseList[this.index] ? (this.exerciseList[this.index].TEstatus > 1 ? "show" : "add") : "add";
+			return "add";
 		}
 	}
 
@@ -320,7 +322,7 @@ export default class Exercise extends wepy.page {
 			let changedExerciseList = [];
 			for (let i = 0; i < self.exerciseList.length; i++) {
 				const exercise = { ...self.exerciseList[i] };
-				if(exercise.TEstatus > 1){
+				if(!exercise.changed){
 					continue;
 				}
 				const imageList = exercise.TEanswerPath;
@@ -382,23 +384,13 @@ export default class Exercise extends wepy.page {
 			this.exerciseList[this.index].TEanswerPath = [...imageList];
 		},
 		clickAskQuestion() {
-			let self = this;
-
-			wepy.request({
-				url: wepy.$instance.globalData.serverUrl + '/app/student/insert_ask_question',
-				method: 'POST',
-				data: {
-					'Sid': Number(self.Sid),
-					'Eid': Number(self.exerciseList[self.index].Eid)
-				},
-				success: function(res) {
-					wx.showToast({
-						title: '提问成功'
-					});
+			wx.openCustomerServiceChat({
+				extInfo: { url: 'https://work.weixin.qq.com/kfid/kfc48375989369e9d71' },
+				corpId: 'wwac8eebae8391f2ad',
+				success(res) {
 				}
-			});
+			})
 		},
-
 	};
 
 	onAnswerChange(){
