@@ -19,7 +19,7 @@
     </view>
 
 
-	<view class="cu-form-group margin-top">
+	<view class="cu-form-group" style="border-top:1rpx solid #eee;">
 		<view class="title">昵称</view>
         <view wx:if="{{!isClickEdit}}">{{copyStudent.Snickname}}</view>
 		<input wx:else name="Snickname" value="{{copyStudent.Snickname}}" disabled="{{!isClickEdit}}"></input>
@@ -72,22 +72,21 @@
 		</picker>
 	</view>
 
-    <view class="cu-bar bg-white" style="border-top:1rpx solid #eee;">
-		<view class="action">校区</view>
+    <view class="bg-white cu-form-group" style="border-top:1rpx solid #eee;">
+		<view class="title">校区</view>
         <view class="action" >
 			{{copyStudent.Cname}}
 		</view>
 	</view>
-
-    <view wx:if="{{isClickEdit}}" class="cu-form-group">
-        校区不能更改，请联系管理员
-    </view>
+	<view wx:if="{{isClickEdit}}" class="cu-form-group" style="border-top:none;">
+		校区不能更改，请联系管理员
+	</view>
 
     <view class="cu-form-group" @tap="onClickEditPassword">
 		<view class="title">修改密码</view>
 	</view>
 
-    <view class="cu-bar bg-white margin-top" style="border-top:1rpx solid #eee;" @tap="onClickLearnSituation">
+    <view class="cu-bar bg-white" style="border-top:1rpx solid #eee;" @tap="onClickLearnSituation">
 		<view class="action">学习情况</view>
         <view class="action text-xl" >
             >

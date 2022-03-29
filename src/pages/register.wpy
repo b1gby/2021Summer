@@ -132,10 +132,10 @@ export default class Student extends wepy.page{
                             });
                     return false;
             }
-			if(!new RegExp("^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z]{6,16}$").test(sendFormData.Spassword)){
+			if(sendFormData.Spassword.length > 8 || sendFormData.Spassword.length < 6){
 				wx.showModal({
 					title: "密码格式错误",
-					content: "密码必须为6~16位中文和数字的组合", //提示的内容,
+					content: "密码长度应为6-8位", //提示的内容,
 					showCancel: false,
 				});
 				return false;
