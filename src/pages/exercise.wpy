@@ -425,7 +425,9 @@ export default class Exercise extends wepy.page {
 						const {EnamePath, EanswerPath, TEanswerPath, Etype, EaudioPath} = exercise;
 						exercise.EnamePath = EnamePath !== "" ?
 							EnamePath.split(";").map(x => IMAGE_OF_EXERCISE_URL + x) : [];
-						exercise.EaudioPath = AUDIO_URL + EaudioPath;
+						if(EaudioPath){
+							exercise.EaudioPath = AUDIO_URL + EaudioPath;
+						}
 						exercise.EanswerPath = EanswerPath !== "" ? EanswerPath.split(";").map(x => IMAGE_OF_EXERCISE_URL + x) : [];
 						exercise.TEanswerPath = TEanswerPath !== "" ? TEanswerPath.split(";").map(x => IMAGE_OF_MY_ANSWER_URL + x) : [];
 						if(exercise.Etype === "选择题" && exercise.EtypeDetail){
