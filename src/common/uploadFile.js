@@ -43,37 +43,46 @@ export async function uploadImageList(imageList, directoryName = 'tmp') {
 }
 
 // 上传音频
-export async function audioUpload(audioPath, directoryName = '') {
-    let returnPath;
-    let serverDirectory = 'https://www.kaigestudy.top:8080/app/file/get_audio?name=' + directoryName;
+export async function audioUpload(audioPath, directoryName = "") {
+    let serverDirectory = "https://www.kaigestudy.top:8080/app/file/get_audio?name=" + directoryName;
     const index = audioPath.indexOf(serverDirectory);
     if (index >= 0) {
         const temp = audioPath.substring(index + serverDirectory.length);
-        const array = temp.match(/\/+(.+)/);
-        return array[1];
+        const lastIndexOfSlash = temp.lastIndexOf("/");
+        if(lastIndexOfSlash >= 0){
+            const array = temp.match(/\/+(.+)/);
+            return array[1];
+        }else{
+            return temp;
+        }
     }
-    await new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
         wepy.uploadFile({
             url: wepy.$instance.globalData.serverUrl + '/app/file/upload_file', //开发者服务器 url
             header: wepy.$instance.setHeader(),
             filePath: audioPath, //要上传文件资源的路径
             name: 'uploadFile', //文件对应的 key , 开发者在服务器端通过这个 key 可以获取到文件二进制内容
             formData: {
-                dirName: 'audios/' + directoryName
+                dirName: "audios/" + directoryName
             },
             success(e) {
-                const data = JSON.parse(e.data);
-                if (data.Code == 1) {
-                    returnPath = data.Data;
+                try{
+                    const data = JSON.parse(e.data);
+                    if (data.Code === 1) {
+                        if(!data.Data){
+                            reject("录音路径为空")
+                        }
+                        resolve(data.Data);
+                    }else{
+                        reject("录音保存失败")
+                    }
+                }catch(e){
+                    reject("录音保存失败")
                 }
             },
             fail() {
-                console.log('录音保存失败');
+                reject("录音保存失败")
             },
-            complete() {
-                resolve();
-            }
         });
-    });
-    return returnPath;
+    })
 }

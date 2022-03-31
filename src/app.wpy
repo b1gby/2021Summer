@@ -47,8 +47,8 @@ export default class extends wepy.app {
 		},
 		// "style" : "v2",
 		'tabBar': {
-			"color": "#bfe9db",
-			"selectedColor": "#6ac1b8",
+			"color": "#aca1fd",
+			"selectedColor": "#aca1fd",
 			'list': [
 				{
 					'pagePath': 'pages/index',

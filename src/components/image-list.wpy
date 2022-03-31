@@ -1,7 +1,7 @@
 <template>
-	<block wx:if="{{type === 'add' || imageList.length > 0}}">
+	<view wx:if="{{type === 'add' || imageList.length > 0}}">
 	<!--当type为show，且并没有足够的image进行展示时，隐藏该组件-->
-		<view class='cu-bar bg-white'>
+		<view class='cu-bar bg-white' wx:if="{{showTitle === 'true'}}">
 			<view class='action'>
 				{{ title }}
 			</view>
@@ -21,7 +21,7 @@
 				<text class='cuIcon-cameraadd'></text>
 			</view>
 		</view>
-	</block>
+	</view>
 </template>
 <script>
 import wepy from 'wepy';
@@ -58,8 +58,8 @@ export default class ImageList extends wepy.component {
 			default: undefined,
 		},
 		showTitle:{
-			type: Boolean,
-			default: false,
+			type: String,
+			default: 'true',
 		}
 	};
 
