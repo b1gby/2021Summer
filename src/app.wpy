@@ -45,6 +45,7 @@ export default class extends wepy.app {
 			navigationBarTitleText: 'WeChat',
 			navigationBarTextStyle: 'black'
 		},
+		"requiredBackgroundModes": ["audio", "location"],
 		// "style" : "v2",
 		'tabBar': {
 			"color": "#aca1fd",

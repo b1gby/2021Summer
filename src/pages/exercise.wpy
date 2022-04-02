@@ -57,12 +57,17 @@ page {
 			>
 			</name-image-list>
 
-			<audio
+<!--			<audio
 				author=''
 				controls='true' name=''
 				src="{{exerciseList[index].EaudioPath}}"
 				wx:if="{{exerciseList[index].EaudioPath}}"
-			></audio>
+			></audio>-->
+
+			<audio-player
+				wx:if="{{audioSrc}}"
+				:src.sync='audioSrc'
+			></audio-player>
 
 <!--			<block wx:if="{{exerciseList[index].EnamePath.length > 0}}">
 				<block wx:if="{{exerciseList[index].Etype!=='听写'}}">
@@ -158,6 +163,7 @@ page {
 <!--			<button class="flex-twice padding cu-btn bg-pink shadow-blur round" open-type="contact" bindcontact="handleContact" session-from="{{sessionFrom}}">提问老师</button>-->
 			<view class='flex-sub margin'></view>
 		</view>
+
 	</view>
 
 	<view class='margin padding' wx:else>
@@ -175,6 +181,7 @@ import { selectionAnswerRange, selectionConfigRange } from '@/common/constant';
 import { IMAGE_OF_EXERCISE_URL } from '../common/url';
 import { getSelectionText } from '../common/param-conversion';
 import { AUTO_CORRECT } from '../common/constant';
+import AudioPlayer from '@/components/audio-player/audio-player';
 
 const initialProps = {
 	hasAnswer: false,
@@ -202,6 +209,7 @@ export default class Exercise extends wepy.page {
 		'image-list': ImageList,
 		'name-image-list': ImageList,
 		'answer-image-list': ImageList,
+		'audio-player': AudioPlayer,
 	};
 
 	data = {
@@ -253,6 +261,9 @@ export default class Exercise extends wepy.page {
 	}
 
 	computed = {
+		audioSrc(){
+			return this.exerciseList[this.index] ? this.exerciseList[this.index].EaudioPath : undefined;
+		},
 		currentImageListOfMyAnswer(){
 			let imageList = this.exerciseList[this.index] ? this.exerciseList[this.index].TEanswerPath : undefined;
 			return typeof imageList === 'undefined' ? [] : imageList;

@@ -1,0 +1,264 @@
+<style>
+	.audio-player-wrapper{
+		height: 200rpx;
+		width: 100%;
+		display: flex;
+		border: 1px solid #eee;
+	}
+	.button{
+		width: 200rpx;
+		height: 200rpx;
+		border-right: 1px solid #eee;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+	.button>image{
+		width: 50%;
+		height: 50%;
+	}
+	.time{
+		font-size: 32rpx;
+		flex: auto;
+		text-align: right;
+	}
+	.rotate{
+		animation: rotate 1s linear 0s infinite;
+	}
+	.bottom-buttons{
+		padding: 0 60rpx;
+		display: grid;
+		grid-template-columns: 60rpx 1fr 60rpx;
+		align-items: center;
+		height: 50%;
+	}
+	.bottom-buttons > image{
+		width: 100%;
+		height: 100%;
+	}
+	@keyframes rotate {
+		0%{
+			transform: rotate(0deg);
+		}
+		100%{
+			transform: rotate(360deg);
+		}
+	}
+</style>
+<template>
+	<view class='audio-player-wrapper'>
+		<view @tap='changeStatus' class='button'>
+			<block wx:if='{{loading}}'>
+				<image class="rotate" src='./loading.png'></image>
+			</block>
+			<block wx:else>
+				<image src='./play-line.png' style="{{'display:' + (!playing? 'block' : 'none')}}"></image>
+				<image src='./suspend-line.png' style="{{'display:' + (playing? 'block' : 'none')}}"></image>
+			</block>
+		</view>
+		<view class='time'>
+			<slider bindchange="timeChange" value='{{value}}'/>
+			<view class='bottom-buttons'>
+				<image src='./double-arrow-left.png' @tap='back'></image>
+				<view style='text-align: center; line-height: 100%'>
+					{{displayTime.minutes}} : {{displayTime.seconds}} / {{duration.minutes}} : {{duration.seconds}}
+				</view>
+				<image src='./double-arrow-right.png' @tap='forward'></image>
+			</view>
+		</view>
+	</view>
+</template>
+<script>
+import wepy from 'wepy';
+
+const initialDisplayTime = Object.freeze({
+	minutes: "00",
+	seconds: "00",
+})
+export default class AudioPlayer extends wepy.component {
+	audioManager = wx.getBackgroundAudioManager();
+	timeMap = new Map();
+	props = {
+		src:{
+			type: String,
+		},
+	};
+	data = {
+		playing: false,
+		loading: false,
+		seeking: false,
+		initial: true,
+		displayTime: { ...initialDisplayTime },
+		duration:{ ...initialDisplayTime },
+		currentTime: 0,
+		value: 0,
+	};
+	methods = {
+		changeStatus: () => {
+			if(this.loading){
+				return;
+			}
+			wx.getBackgroundAudioPlayerState({
+				success: (res) => {
+					const {status} = res;
+					this.initial = false;
+					if(status === 0){
+						this.audioManager.play();
+					}else {
+						this.audioManager.pause();
+					}
+				}
+			})
+		},
+		timeChange: (e) => {
+			if(this.audioManager.duration){
+				this.value = e.detail.value;
+				this.audioManager.seek(this.value * this.audioManager.duration / 100);
+			}
+		},
+		back: (e) => {
+			const {duration} = this.audioManager;
+			if(typeof duration === "number"){
+				let currentTime = this.currentTime;
+				let nextTime = currentTime - 15;
+				nextTime = nextTime >= 0 ? nextTime : 0;
+				this.currentTime = nextTime;
+				this.audioManager.seek(nextTime);
+				if(!this.playing){
+					this.displayTime = getDisplayTime(nextTime);
+				}
+			}
+		},
+		forward() {
+			const {duration} = this.audioManager;
+			if(typeof duration === "number"){
+				let currentTime = this.currentTime;
+				let nextTime = currentTime + 15;
+				nextTime = nextTime <= duration ? nextTime : duration;
+				this.currentTime = nextTime;
+				this.audioManager.seek(nextTime);
+				if(!this.playing){
+					this.displayTime = getDisplayTime(nextTime);
+				}
+			}
+		}
+	};
+	watch = {
+		src: (src) => {
+			try{
+				this.setSrc(src);
+			}catch(e){
+				this.audioManager.stop();
+				this.displayTime = { ...initialDisplayTime };
+				this.$apply();
+			}
+		},
+	}
+
+	//当loading为false时，表示重置src
+	setSrc = (src, loading = true) => {
+		if(!src){
+			this.audioManager.stop();
+			return;
+		}
+		//有新的src被插入
+		this.audioManager.title = '听力'
+		this.audioManager.epname = '听力'
+		this.audioManager.singer = '听力'
+		this.audioManager.src = src;
+		this.currentTime = 0;
+		this.displayTime = { ...initialDisplayTime };
+		if(loading){
+			this.duration = { ...initialDisplayTime };
+		}
+		this.loading = loading;
+		this.playing = false;
+		if(this.timeMap.has(src)){
+			this.seeking = this.timeMap.get(src);
+		}
+		this.initial = true;
+		this.$apply();
+	}
+
+	printStatus = () => {
+		console.table({
+			loading: this.loading,
+			seeking: this.seeking,
+			initial: this.initial,
+			playing: this.playing,
+		})
+	}
+
+	onLoad(){
+		this.audioManager.onCanplay(() => {
+			if(this.seeking){
+				this.audioManager.seek(this.seeking);
+				const seconds = Math.floor(this.seeking);
+				this.displayTime = getDisplayTime(seconds);
+				this.seeking = false;
+			}
+			if(this.loading){
+				this.loading = false;
+			}
+			this.$apply();
+		})
+		this.audioManager.onPlay(() => {
+			this.duration = getDisplayTime(this.audioManager.duration);
+			if(this.initial){
+				this.audioManager.pause();
+			}else{
+				this.playing = true;
+				this.$apply();
+			}
+		})
+		this.audioManager.onPause(() => {
+			if(this.loading && this.playing){
+				this.audioManager.pause();
+			}
+			this.playing = false;
+			this.$apply();
+		})
+		this.audioManager.onStop(() => {
+			this.setSrc(this.src, false);
+			this.playing = false;
+			this.$apply();
+		});
+		this.audioManager.onEnded(() => {
+			this.timeMap.delete(this.src);
+			this.setSrc(this.src, false);
+			this.playing = false;
+			this.$apply();
+		});
+		this.audioManager.onTimeUpdate(() => {
+			console.log("time update");
+			this.timeMap.set(this.audioManager.src, this.audioManager.currentTime);
+			const seconds = Math.floor(this.audioManager.currentTime);
+			this.displayTime = getDisplayTime(seconds);
+			this.currentTime = seconds;
+			if(this.audioManager.duration){
+				const duration = this.audioManager.duration;
+				this.value = seconds / duration * 100;
+			}
+			this.$apply();
+		})
+		this.audioManager.onWaiting(() => {
+			this.timeMap.set(this.audioManager.src, this.audioManager.currentTime);
+			this.loading = true;
+			this.$apply();
+		})
+	}
+
+	onUnload(){
+		this.audioManager.stop();
+	}
+}
+
+function getDisplayTime(seconds){
+	seconds = Math.floor(seconds);
+	return {
+		minutes: String(Math.floor(seconds / 60)).padStart(2, "0"),
+		seconds: String(seconds % 60).padStart(2, "0"),
+	}
+}
+
+</script>
