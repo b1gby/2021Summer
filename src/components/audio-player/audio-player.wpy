@@ -113,7 +113,11 @@ export default class AudioPlayer extends wepy.component {
 		timeChange: (e) => {
 			if(this.audioManager.duration){
 				this.value = e.detail.value;
-				this.audioManager.seek(this.value * this.audioManager.duration / 100);
+				let currentTime = this.value * this.audioManager.duration / 100;
+				this.audioManager.seek(currentTime);
+				if(!this.playing){
+					this.displayTime = getDisplayTime(currentTime);
+				}
 			}
 		},
 		back: (e) => {
