@@ -20,19 +20,24 @@ export const typeRange = {
 
 export const difficultRange = ['简单', '中等', '困难', '竞赛'];
 
-export const getSearchRanges = () => {
+export const getSearchRanges = (Eunit) => {
+    Eunit = {...Eunit};
     let Etype = {
         '': ["不限"],
         '不限': ["不限"]
     };
     subjectRange.forEach((subject) => {
         Etype[subject] = ['不限'].concat(typeRange[subject]);
+        if(!Eunit[subject]){
+            Eunit[subject] = ['不限'];
+        }
     })
     return {
         Egrade: ['不限'].concat(gradeRange),
         Esubject: ['不限'].concat(subjectRange),
         Edifficulty: ['不限'].concat(difficultRange),
-        Etype
+        Etype,
+        Eunit,
     };
 };
 
