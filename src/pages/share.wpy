@@ -1,0 +1,104 @@
+<style>
+
+</style>
+<template>
+	 <view style='width: 100vw; height: 100vh; position: relative; display: flex; align-items: center' wx:if='{{loaded}}'>
+		 <image src='../images/ercode.jpg' mode='widthFix' style='width: 100vw' show-menu-by-longpress='true'></image>
+		 <view style='width: 100vw; height: 100vh; position: absolute; background: rgba(0,0,0,0.8)' @tap='onMaskClick' wx:if='{{showMask}}'>
+			 <view wx:if="{{platform === 'pc'}}">
+				 <image src='../images/arrow-up.png' style='width: 100rpx; height: 100rpx; position: absolute; right: 120rpx'></image>
+				 <view style='position: absolute; width:100vw; top: 200rpx; padding:0 120rpx; font-size: 48rpx; color: white'>
+					 <view style='margin-bottom: 48rpx; display: flex; align-items: center'>
+						 1. 点击右上角<image src='../images/more.png' style='display: inline-block; height: 64rpx; max-width: 200rpx; margin-left: 10rpx' mode='heightFix'></image>
+					 </view>
+					 <view>
+						 2. 点击分享到朋友圈
+					 </view>
+					 <image src='../images/share.png' style='width: 90vw; position: relative; left: -120rpx; margin-left: 5vw; max-width: initial; height: 30vw' mode='widthFix'></image>
+					 <view style='display: flex; justify-content: center'>
+						 <view style='border: 1px solid white; border-radius: 10rpx; margin-top: 100rpx; padding: 20rpx 40rpx;'>
+							 我知道了
+						 </view>
+					 </view>
+				 </view>
+			 </view>
+			 <view wx:if="{{platform === 'ios'}}">
+				 <view style='position: absolute; top: 400rpx; padding: 0 120rpx; width: 100vw; font-size: 48rpx; color: white'>
+					 <view style='margin-bottom: 48rpx; text-align: center'>
+						 1. 长按并保存二维码
+					 </view>
+					 <view style='text-align: center'>
+						 2. 发送图片至朋友圈
+					 </view>
+					 <view style='display: flex; justify-content: center'>
+						 <view style='border: 1px solid white; border-radius: 10rpx; margin-top: 100rpx; padding: 20rpx 40rpx;'>
+							 我知道了
+						 </view>
+					 </view>
+				 </view>
+			 </view>
+		 </view>
+	 </view>
+</template>
+<script>
+import wepy from 'wepy';
+import { getStorage, setStorage } from '../common/storage';
+import SystemInfoUtil from '../common/system-info';
+
+export default class Share extends wepy.page {
+	props = {};
+	data = {
+		showMask: false,
+		loaded: false,
+		platform: undefined,
+	};
+	methods = {
+		onMaskClick: function(){
+			setStorage("shareMask", false, 24 * 60 * 60 * 1000 * 3);
+			this.showMask = false;
+		}
+	};
+
+	onLoad() {
+		const {scene} = wx.getLaunchOptionsSync()
+		if(scene === 1154){
+			this.loaded = true;
+			this.showMask = false;
+			return;
+		}
+		//如果设备没有clickShare变量，那么说明不是通过分享到朋友圈按钮跳转的，而是从朋友圈进入的，所以需要跳转到index页面
+		let clickShare = getStorage("clickShare");
+		if(clickShare !== true){
+			wx.reLaunch({
+				url: "index"
+			});
+			return;
+		}
+		//若不是从朋友圈进入，那么需要设置loaded令页面显示
+		this.loaded = true;
+		this.platform = SystemInfoUtil.platform;
+		let shareMask = getStorage("shareMask");
+		if(shareMask === false){
+			this.showMask = false;
+		}else{
+			this.showMask = true;
+		}
+
+		wx.showShareMenu({
+			withShareTicket: true,
+			menus: ['shareAppMessage', 'shareTimeline']
+		})
+		wx.setNavigationBarTitle({
+			title: "凯歌自主学习辅助系统",
+		})
+	}
+
+	onShareAppMessage(obj){
+		return {
+			title: "凯歌自主学习辅助系统",
+			path: "pages/index",
+			imageUrl: "../images/fullicon.png"
+		}
+	}
+}
+</script>

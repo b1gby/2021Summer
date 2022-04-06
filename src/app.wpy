@@ -20,6 +20,7 @@
 <script>
 import wepy from 'wepy';
 import 'wepy-async-function';
+import SystemInfoUtil from './common/system-info';
 
 export default class extends wepy.app {
 
@@ -28,6 +29,7 @@ export default class extends wepy.app {
 			'pages/index',
 			'pages/login',
 			'pages/my',
+			'pages/share',
 			'pages/edit-password',
 			'pages/exercise',
 			'pages/exercise-history',
@@ -79,6 +81,7 @@ export default class extends wepy.app {
 	};
 
 	onLaunch() {
+		SystemInfoUtil.init();
 		this.updateVersion();
 		let self = this;
 		//检查sessionid是否过期
