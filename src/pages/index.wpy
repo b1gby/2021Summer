@@ -19,7 +19,7 @@ page{
 			</view>
 			<view class='flex align-center margin' wx:if='{{userInfo!=null}}'>
 				<view class='flex-sub text-black text-lg'>年级：{{ userInfo.SgradeName }}</view>
-				<view class='flex-sub text-black text-lg'>校区：{{ userInfo.Cname }}</view>
+<!--				<view class='flex-sub text-black text-lg'>校区：{{ userInfo.Cname }}</view>-->
 			</view>
 		</view>
 		<view class='cu-item margin-top-xl margin-bottom-xl' wx:if='{{userInfo!=null}}'>

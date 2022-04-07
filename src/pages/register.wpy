@@ -60,18 +60,14 @@
 		</picker>
 	</view>
 
-	<view class="cu-form-group">
+<!--	<view class="cu-form-group">
 		<view class="title">校区</view>
 		<picker bindchange="pickerCampusChange" name="Cid" range-key="Cname" value="{{campusIndex}}" range="{{campusList}}">
 			<view class="picker">
 				<text class="text-lg">{{campusList[campusIndex].Cname}}</text>
 			</view>
 		</picker>
-	</view>
-
-    <view class="cu-form-group">
-        校区请与老师确认，确定后只能联系教师修改
-    </view>
+	</view>-->
 
     <view class="padding flex justify-center bg-white">
         <button class="cu-btn bg-green shadow lg" form-type="submit">添加学生</button>
@@ -167,7 +163,7 @@ export default class Student extends wepy.page{
 					sendFormData['Sicon'] = imageUrlList[0];
 				}
 			}
-			sendFormData['Cid'] = Number(this.campusList[sendFormData['Cid']]['Cid']);
+			sendFormData['Cid'] = 300001;
             wepy.request({
                 url:wepy.$instance.globalData.serverUrl + '/app/login/register_student',
                 method:'POST',
