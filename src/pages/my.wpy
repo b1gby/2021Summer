@@ -320,15 +320,15 @@ export default class Student extends wepy.page{
                             self.gradeIndex = i
                         }
                     }
-                    
+
                 }
             }
         })
     }
-    
+
 
     onLoad() {
-        
+
     }
 
     onShow(){

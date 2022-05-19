@@ -75,37 +75,51 @@ export default class Login extends wepy.page{
                 },
                 success: function(res) {
                     console.log(res)
-                    if(res.data.Code == 1) {
-                        if (res.data.Msg == "Student login success!"){
+                    if(res.data.Code === 1) {
+                        if (res.data.Msg === "Student login success!"){
                             wepy.setStorageSync("sessionDate", Date.parse(new Date()))
                             wepy.setStorageSync("sessionToken",res.data.Data["token"])
                             wepy.setStorageSync("sessionUserInfo",res.data.Data["userinfo"])
                             wepy.$instance.globalData.userInfo = res.data.Data["userinfo"]
-                            console.log("login success")
+							wx.showToast({
+								title: '登录成功', //提示的内容,
+								icon: 'success', //图标,
+								mask: true, //显示透明蒙层，防止触摸穿透,
+							});
                             self.$apply()
                             setTimeout(function () {
                                 wepy.navigateBack({delta:1})
                             }, 1000)
                         }
-                        
-                    }else if(res.data.Code == 2){
-                        if(res.data.Msg == "Password not correct!"){
+                    }else if(res.data.Code === 2){
+                        if(res.data.Msg === "Password not correct!"){
                             wx.showToast({
                               title: '密码错误', //提示的内容,
                               icon: 'error', //图标,
                               mask: true, //显示透明蒙层，防止触摸穿透,
-                              success: res => {}
                             });
-                        } else if(res.data.Msg == "Name not exist!"){
+                        } else if(res.data.Msg === "Name not exist!"){
                             wx.showToast({
                               title: '用户名不存在', //提示的内容,
                               icon: 'error', //图标,
                               mask: true, //显示透明蒙层，防止触摸穿透,
-                              success: res => {}
                             });
                         }
-                    }
-                }
+                    }else if(res.data.Code === 3){
+						wx.showToast({
+							title: '账号已被禁用', //提示的内容,
+							icon: 'error', //图标,
+							mask: true, //显示透明蒙层，防止触摸穿透,
+						});
+					}
+                },
+				fail: function(error){
+					wx.showToast({
+						title: '登录失败',
+						icon: 'error',
+						mask: true,
+					})
+				}
             })
         },
 
